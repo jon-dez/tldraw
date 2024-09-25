@@ -5,6 +5,7 @@ import {
 	LoadingScreen,
 	TLAnyBindingUtilConstructor,
 	TLAnyShapeUtilConstructor,
+	TLAssetStore,
 	TLEditorSnapshot,
 	TLImageExportOptions,
 	TLPageId,
@@ -50,6 +51,10 @@ export interface TldrawImageProps extends TLImageExportOptions {
 	 */
 	licenseKey?: string
 	/**
+	 * How should this store resolve assets?
+	 */
+	assets?: TLAssetStore
+	/**
 	 * Asset URL overrides.
 	 */
 	assetUrls?: TLUiAssetUrlOverrides
@@ -84,7 +89,11 @@ export const TldrawImage = memo(function TldrawImage(props: TldrawImageProps) {
 		() => [...defaultBindingUtils, ...bindingUtils],
 		[bindingUtils]
 	)
-	const store = useTLStore({ snapshot: props.snapshot, shapeUtils: shapeUtilsWithDefaults })
+	const store = useTLStore({
+		assets: props.assets,
+		snapshot: props.snapshot,
+		shapeUtils: shapeUtilsWithDefaults,
+	})
 
 	const assets = useDefaultEditorAssetsWithOverrides(props.assetUrls)
 	const { done: preloadingComplete, error: preloadingError } = usePreloadAssets(assets)
