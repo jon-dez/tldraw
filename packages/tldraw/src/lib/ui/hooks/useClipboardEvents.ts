@@ -8,6 +8,7 @@ import {
 	preventDefault,
 	stopEventPropagation,
 	uniq,
+	useContainer,
 	useEditor,
 	useValue,
 } from '@tldraw/editor'
@@ -597,6 +598,7 @@ export function useMenuClipboardEvents() {
 
 /** @public */
 export function useNativeClipboardEvents() {
+	const container = useContainer()
 	const editor = useEditor()
 	const trackEvent = useUiEvents()
 
@@ -685,16 +687,16 @@ export function useNativeClipboardEvents() {
 			trackEvent('paste', { source: 'kbd' })
 		}
 
-		document.addEventListener('copy', copy)
-		document.addEventListener('cut', cut)
-		document.addEventListener('paste', paste)
-		document.addEventListener('pointerup', pointerUpHandler)
+		container.ownerDocument.addEventListener('copy', copy)
+		container.ownerDocument.addEventListener('cut', cut)
+		container.ownerDocument.addEventListener('paste', paste)
+		container.ownerDocument.addEventListener('pointerup', pointerUpHandler)
 
 		return () => {
-			document.removeEventListener('copy', copy)
-			document.removeEventListener('cut', cut)
-			document.removeEventListener('paste', paste)
-			document.removeEventListener('pointerup', pointerUpHandler)
+			container.ownerDocument.removeEventListener('copy', copy)
+			container.ownerDocument.removeEventListener('cut', cut)
+			container.ownerDocument.removeEventListener('paste', paste)
+			container.ownerDocument.removeEventListener('pointerup', pointerUpHandler)
 		}
-	}, [editor, trackEvent, appIsFocused])
+	}, [editor, trackEvent, appIsFocused, container])
 }

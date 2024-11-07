@@ -4,6 +4,7 @@ import {
 	StyleProp,
 	TLDefaultColorStyle,
 	TLDefaultColorTheme,
+	useContainer,
 	useEditor,
 } from '@tldraw/editor'
 import classNames from 'classnames'
@@ -40,6 +41,7 @@ export const TldrawUiButtonPicker = memo(function TldrawUiButtonPicker<T extends
 		theme,
 	} = props
 	const editor = useEditor()
+	const container = useContainer()
 	const msg = useTranslation()
 
 	const rPointing = useRef(false)
@@ -53,7 +55,7 @@ export const TldrawUiButtonPicker = memo(function TldrawUiButtonPicker<T extends
 	} = useMemo(() => {
 		const handlePointerUp = () => {
 			rPointing.current = false
-			window.removeEventListener('pointerup', handlePointerUp)
+			container.win.removeEventListener('pointerup', handlePointerUp)
 
 			// This is fun little micro-optimization to make sure that the focus
 			// is retained on a text label. That way, you can continue typing
@@ -80,8 +82,8 @@ export const TldrawUiButtonPicker = memo(function TldrawUiButtonPicker<T extends
 			onValueChange(style, id as T)
 
 			rPointing.current = true
-			rPointingOriginalActiveElement.current = document.activeElement as HTMLElement
-			window.addEventListener('pointerup', handlePointerUp) // see TLD-658
+			rPointingOriginalActiveElement.current = container.ownerDocument.activeElement as HTMLElement
+			container.win.addEventListener('pointerup', handlePointerUp) // see TLD-658
 		}
 
 		const handleButtonPointerEnter = (e: React.PointerEvent<HTMLButtonElement>) => {
@@ -104,7 +106,7 @@ export const TldrawUiButtonPicker = memo(function TldrawUiButtonPicker<T extends
 			handleButtonPointerEnter,
 			handleButtonPointerUp,
 		}
-	}, [value, editor, onValueChange, style])
+	}, [value, editor, onValueChange, style, container])
 
 	return (
 		<div data-testid={`style.${uiType}`} className={classNames('tlui-buttons__grid')}>

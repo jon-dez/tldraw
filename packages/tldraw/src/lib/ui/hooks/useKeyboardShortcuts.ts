@@ -1,4 +1,11 @@
-import { Editor, TLPointerEventInfo, preventDefault, useEditor, useValue } from '@tldraw/editor'
+import {
+	Editor,
+	TLPointerEventInfo,
+	preventDefault,
+	useContainer,
+	useEditor,
+	useValue,
+} from '@tldraw/editor'
 import hotkeys from 'hotkeys-js'
 import { useEffect } from 'react'
 import { useActions } from '../context/actions'
@@ -16,6 +23,7 @@ const SKIP_KBDS = [
 
 /** @public */
 export function useKeyboardShortcuts() {
+	const container = useContainer()
 	const editor = useEditor()
 
 	const isReadonlyMode = useReadonly()
@@ -28,14 +36,18 @@ export function useKeyboardShortcuts() {
 		const disposables = new Array<() => void>()
 
 		const hot = (keys: string, callback: (event: KeyboardEvent) => void) => {
-			hotkeys(keys, { element: document.body }, callback)
+			hotkeys(keys, { element: container.ownerDocument.body }, callback)
 			disposables.push(() => {
 				hotkeys.unbind(keys, callback)
 			})
 		}
 
 		const hotUp = (keys: string, callback: (event: KeyboardEvent) => void) => {
-			hotkeys(keys, { element: document.body, keyup: true, keydown: false }, callback)
+			hotkeys(
+				keys,
+				{ element: container.ownerDocument.body, keyup: true, keydown: false },
+				callback
+			)
 			disposables.push(() => {
 				hotkeys.unbind(keys, callback)
 			})
@@ -126,7 +138,7 @@ export function useKeyboardShortcuts() {
 		return () => {
 			disposables.forEach((d) => d())
 		}
-	}, [actions, tools, isReadonlyMode, editor, isFocused])
+	}, [actions, tools, isReadonlyMode, editor, container, isFocused])
 }
 
 function getHotkeysStringFromKbd(kbd: string) {

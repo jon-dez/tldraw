@@ -50,7 +50,7 @@ export class TextHelpers {
 
 		if (initialFocus === document.body) {
 			field.blur()
-		} else if (initialFocus instanceof HTMLElement && initialFocus !== field) {
+		} else if (initialFocus?.instanceOf(HTMLElement) && initialFocus !== field) {
 			initialFocus.focus()
 		}
 	}

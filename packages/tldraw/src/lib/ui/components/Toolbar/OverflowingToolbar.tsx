@@ -116,7 +116,7 @@ export function OverflowingToolbar({ children }: OverflowingToolbarProps) {
 				const relevantEls = Array.from(mainToolsRef.current?.children ?? []).filter(
 					(el): el is HTMLElement => {
 						// only count html elements...
-						if (!(el instanceof HTMLElement)) return false
+						if (!el.instanceOf(HTMLElement)) return false
 
 						// ...that are buttons...
 						if (el.tagName.toLowerCase() !== 'button') return false

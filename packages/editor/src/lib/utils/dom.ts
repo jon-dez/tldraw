@@ -16,9 +16,30 @@ whatever reason.
 import React from 'react'
 import { debugFlags, pointerCaptureTrackingObject } from './debug-flags'
 
+declare global {
+	interface Node {
+		/**
+		 * Cross-window capable instanceof check, a drop-in replacement
+		 * for instanceof checks on DOM Nodes. Remember to also check
+		 * for nulls when necessary.
+		 *
+		 * #NOTE: Copied from Obsidian.md API https://github.com/obsidianmd/obsidian-api/blob/master/obsidian.d.ts
+		 *
+		 * @param type
+		 */
+		instanceOf<T>(type: { new (): T }): this is T
+		/**
+		 * The window object this node belongs to, or the global window.
+		 *
+		 * #NOTE: Copied from Obsidian.md API
+		 */
+		win: Window
+	}
+}
+
 /** @public */
 export function loopToHtmlElement(elm: Element): HTMLElement {
-	if (elm instanceof HTMLElement) return elm
+	if (elm.instanceOf(HTMLElement)) return elm
 	if (elm.parentElement) return loopToHtmlElement(elm.parentElement)
 	else throw Error('Could not find a parent element of an HTML type!')
 }
