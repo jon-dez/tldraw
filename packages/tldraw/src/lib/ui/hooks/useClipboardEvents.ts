@@ -37,7 +37,7 @@ export const isValidHttpURL = (url: string) => {
 	try {
 		const u = new URL(url)
 		return u.protocol === 'http:' || u.protocol === 'https:'
-	} catch (e) {
+	} catch {
 		return false
 	}
 }
@@ -51,7 +51,7 @@ const getValidHttpURLList = (url: string) => {
 			if (!(u.protocol === 'http:' || u.protocol === 'https:')) {
 				return
 			}
-		} catch (e) {
+		} catch {
 			return
 		}
 	}
@@ -68,13 +68,13 @@ const INPUTS = ['input', 'select', 'textarea']
 /**
  * Get whether to disallow clipboard events.
  *
- * @param editor - The editor instance.
  * @internal
  */
-function disallowClipboardEvents(editor: Editor) {
+function areShortcutsDisabled(editor: Editor) {
 	const { activeElement } = document
+
 	return (
-		editor.getIsMenuOpen() ||
+		editor.menus.hasAnyOpenMenus() ||
 		(activeElement &&
 			(activeElement.getAttribute('contenteditable') ||
 				INPUTS.indexOf(activeElement.tagName.toLowerCase()) > -1))
@@ -359,7 +359,7 @@ async function handleClipboardThings(editor: Editor, things: ClipboardThing[], p
 										r({ type: 'tldraw', data: json.data })
 										return
 									}
-								} catch (e: any) {
+								} catch {
 									r({
 										type: 'error',
 										data: tldrawHtmlComment,
@@ -390,7 +390,7 @@ async function handleClipboardThings(editor: Editor, things: ClipboardThing[], p
 										r({ type: 'text', data: text, subtype: 'json' })
 										return
 									}
-								} catch (e) {
+								} catch {
 									// If we could not parse the text as JSON, then it's just text
 									r({ type: 'text', data: text, subtype: 'text' })
 									return
@@ -612,7 +612,7 @@ export function useNativeClipboardEvents() {
 			if (
 				editor.getSelectedShapeIds().length === 0 ||
 				editor.getEditingShapeId() !== null ||
-				disallowClipboardEvents(editor)
+				areShortcutsDisabled(editor)
 			) {
 				return
 			}
@@ -626,7 +626,7 @@ export function useNativeClipboardEvents() {
 			if (
 				editor.getSelectedShapeIds().length === 0 ||
 				editor.getEditingShapeId() !== null ||
-				disallowClipboardEvents(editor)
+				areShortcutsDisabled(editor)
 			) {
 				return
 			}
@@ -656,7 +656,7 @@ export function useNativeClipboardEvents() {
 			// If we're editing a shape, or we are focusing an editable input, then
 			// we would want the user's paste interaction to go to that element or
 			// input instead; e.g. when pasting text into a text shape's content
-			if (editor.getEditingShapeId() !== null || disallowClipboardEvents(editor)) return
+			if (editor.getEditingShapeId() !== null || areShortcutsDisabled(editor)) return
 
 			// Where should the shapes go?
 			let point: Vec | undefined = undefined

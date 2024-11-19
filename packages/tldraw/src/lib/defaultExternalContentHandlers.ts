@@ -447,7 +447,7 @@ export function registerDefaultExternalContentHandlers(
 				const bookmarkAsset = await editor.getAssetForExternalContent({ type: 'url', url })
 				if (!bookmarkAsset) throw Error('Could not create an asset')
 				asset = bookmarkAsset
-			} catch (e) {
+			} catch {
 				toasts.addToast({
 					title: msg('assets.url.failed'),
 					severity: 'error',
@@ -626,7 +626,7 @@ export function centerSelectionAroundPoint(editor: Editor, position: VecLike) {
 	// Zoom out to fit the shapes, if necessary
 	selectionPageBounds = editor.getSelectionPageBounds()
 	if (selectionPageBounds && !viewportPageBounds.contains(selectionPageBounds)) {
-		editor.zoomToSelection()
+		editor.zoomToSelection({ animation: { duration: editor.options.animationMediumMs } })
 	}
 }
 

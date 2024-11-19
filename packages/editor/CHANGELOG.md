@@ -1,3 +1,186 @@
+# v3.4.0 (Thu Oct 24 2024)
+
+### Release Notes
+
+#### npm: upgrade eslint v8 → v9 ([#4757](https://github.com/tldraw/tldraw/pull/4757))
+
+- Upgrade eslint v8 → v9
+
+#### make options object stable ([#4762](https://github.com/tldraw/tldraw/pull/4762))
+
+- Writing `options` inline in the Tldraw component will no longer cause re-render loops
+
+#### menus: rework the open menu logic to be in one consistent place ([#4642](https://github.com/tldraw/tldraw/pull/4642))
+
+- Rework open menu logic to be centralized.
+
+#### drag: passthrough correct event type for drag events ([#4739](https://github.com/tldraw/tldraw/pull/4739))
+
+- Fix bug with passing correct event type for drag events
+
+#### refactor: specify type at bbox ([#4732](https://github.com/tldraw/tldraw/pull/4732))
+
+- When I see the code in `packages/editor/src/lib/exports/getSvgJsx.tsx`, Improvements were found.
+```
+// L57
+let bbox: = null // any type
+```
+- This is declared as `let`, but it is `any` type.
+- I felt this was a risk for future maintenance.
+- So I specify the type of `bbox`.
+```
+let bbox: null | Box = null
+```
+
+#### lod: memoize media assets so that zoom level doesn't re-render constantly ([#4659](https://github.com/tldraw/tldraw/pull/4659))
+
+- Improve performance of image/video rendering.
+
+#### drag/drop: followup to accidental img drop pr ([#4704](https://github.com/tldraw/tldraw/pull/4704))
+
+- Fix bug with multiple images being created when dropping it onto the canvas.
+
+#### links: fix link indicator on stickies ([#4708](https://github.com/tldraw/tldraw/pull/4708))
+
+- Fix link indicator in sticky notes.
+
+#### make sure DOM IDs are globally unique ([#4694](https://github.com/tldraw/tldraw/pull/4694))
+
+- Exports and other tldraw instances no longer can affect how each other are rendered
+- **BREAKING:** the `id` attribute that was present on some shapes in the dom has been removed. there's now a data-shape-id attribute on every shape wrapper instead though.
+
+---
+
+#### 🐛 Bug Fix
+
+- roll back changes from bad deploy [#4780](https://github.com/tldraw/tldraw/pull/4780) ([@SomeHats](https://github.com/SomeHats))
+- Update CHANGELOG.md \[skip ci\] ([@huppy-bot[bot]](https://github.com/huppy-bot[bot]))
+- [botcom] file state [#4766](https://github.com/tldraw/tldraw/pull/4766) ([@ds300](https://github.com/ds300))
+- botcom: account menu [bk] [#4683](https://github.com/tldraw/tldraw/pull/4683) ([@mimecuvalo](https://github.com/mimecuvalo))
+- botcom: prevent pinch-zoom on sidebar [#4697](https://github.com/tldraw/tldraw/pull/4697) ([@mimecuvalo](https://github.com/mimecuvalo))
+
+#### 🐛 Bug Fixes
+
+- [Fix] Keyboard events on menus [#4745](https://github.com/tldraw/tldraw/pull/4745) ([@steveruizok](https://github.com/steveruizok))
+- Make ids public [#4742](https://github.com/tldraw/tldraw/pull/4742) ([@steveruizok](https://github.com/steveruizok))
+- drag: passthrough correct event type for drag events [#4739](https://github.com/tldraw/tldraw/pull/4739) ([@mimecuvalo](https://github.com/mimecuvalo))
+- drag/drop: followup to accidental img drop pr [#4704](https://github.com/tldraw/tldraw/pull/4704) ([@mimecuvalo](https://github.com/mimecuvalo))
+- links: fix link indicator on stickies [#4708](https://github.com/tldraw/tldraw/pull/4708) ([@mimecuvalo](https://github.com/mimecuvalo))
+- [fix] Meta key bug [#4701](https://github.com/tldraw/tldraw/pull/4701) ([@steveruizok](https://github.com/steveruizok))
+- make sure DOM IDs are globally unique [#4694](https://github.com/tldraw/tldraw/pull/4694) ([@SomeHats](https://github.com/SomeHats))
+
+#### 💄 Product Improvements
+
+- npm: upgrade eslint v8 → v9 [#4757](https://github.com/tldraw/tldraw/pull/4757) ([@mimecuvalo](https://github.com/mimecuvalo) [@SomeHats](https://github.com/SomeHats) [@ds300](https://github.com/ds300) [@MitjaBezensek](https://github.com/MitjaBezensek) [@steveruizok](https://github.com/steveruizok))
+- menus: rework the open menu logic to be in one consistent place [#4642](https://github.com/tldraw/tldraw/pull/4642) ([@mimecuvalo](https://github.com/mimecuvalo) [@steveruizok](https://github.com/steveruizok))
+- refactor: specify type at bbox [#4732](https://github.com/tldraw/tldraw/pull/4732) ([@nayounsang](https://github.com/nayounsang))
+- lod: memoize media assets so that zoom level doesn't re-render constantly [#4659](https://github.com/tldraw/tldraw/pull/4659) ([@mimecuvalo](https://github.com/mimecuvalo) [@steveruizok](https://github.com/steveruizok))
+
+#### 🛠️ API Changes
+
+- make options object stable [#4762](https://github.com/tldraw/tldraw/pull/4762) ([@SomeHats](https://github.com/SomeHats))
+
+#### Authors: 7
+
+- [@huppy-bot[bot]](https://github.com/huppy-bot[bot])
+- [@nayounsang](https://github.com/nayounsang)
+- alex ([@SomeHats](https://github.com/SomeHats))
+- David Sheldrick ([@ds300](https://github.com/ds300))
+- Mime Čuvalo ([@mimecuvalo](https://github.com/mimecuvalo))
+- Mitja Bezenšek ([@MitjaBezensek](https://github.com/MitjaBezensek))
+- Steve Ruiz ([@steveruizok](https://github.com/steveruizok))
+
+---
+
+# v3.3.0 (Wed Oct 09 2024)
+
+### Release Notes
+
+#### [sync] Set instance.isReadonly automatically ([#4673](https://github.com/tldraw/tldraw/pull/4673))
+
+- Puts the editor into readonly mode automatically when the tlsync server responds in readonly mode.
+- Adds the `editor.getIsReadonly()` method.
+- Fixes a bug where arrow labels could be edited in readonly mode.
+
+#### Pass through wheel events over non-scrolling user interface elements ([#4662](https://github.com/tldraw/tldraw/pull/4662))
+
+- Fixes a bug where scrolling over user interface elements would not scroll the canvas.
+
+#### prevent accidental image drops ([#4651](https://github.com/tldraw/tldraw/pull/4651))
+
+- Fixed a bug where dropping images or other things on user interface elements would navigate away from the canvas
+
+#### Fix an issue with nearest point and lines that start and end at the same point ([#4650](https://github.com/tldraw/tldraw/pull/4650))
+
+- Fix a bug with nearest points for lines that start and end at the same point.
+
+#### selection: allow cmd/ctrl to add to selection ([#4570](https://github.com/tldraw/tldraw/pull/4570))
+
+- Selection: allow cmd/ctrl to add multiple shapes to the selection.
+
+#### watermark: go behind certain elements on the app ([#4656](https://github.com/tldraw/tldraw/pull/4656))
+
+- Fix issue with watermark and certain UI elements.
+
+#### [dotcom] Menus, dialogs, toasts, etc. ([#4624](https://github.com/tldraw/tldraw/pull/4624))
+
+- exports dialogs system
+- exports toasts system
+- exports translations system
+- create a global `tlmenus` system for menus
+- create a global `tltime` system for timers
+- create a global `tlenv` for environment" 
+- create a `useMaybeEditor` hook
+
+#### Fix watermark link opening twice ([#4622](https://github.com/tldraw/tldraw/pull/4622))
+
+- Fix watermark link opening twice
+
+#### Add eslint rule to check that tsdoc params match with function params ([#4615](https://github.com/tldraw/tldraw/pull/4615))
+
+- Add lint rules to check for discrepancies between tsdoc params and function params and fix all the discovered issues.
+
+#### [bugfix] respect camera constraints after switching page + setting constraints ([#4628](https://github.com/tldraw/tldraw/pull/4628))
+
+- Fixed a bug where camera constraints were not upheld after switching pages or setting new camera constraints.
+
+---
+
+#### 🐛 Bug Fix
+
+- Improve watermark tests [#4669](https://github.com/tldraw/tldraw/pull/4669) ([@steveruizok](https://github.com/steveruizok))
+- [dotcom] Menus, dialogs, toasts, etc. [#4624](https://github.com/tldraw/tldraw/pull/4624) ([@steveruizok](https://github.com/steveruizok))
+- chore: refactor safe id [#4618](https://github.com/tldraw/tldraw/pull/4618) ([@mimecuvalo](https://github.com/mimecuvalo))
+
+#### 🐛 Bug Fixes
+
+- prevent accidental image drops [#4651](https://github.com/tldraw/tldraw/pull/4651) ([@steveruizok](https://github.com/steveruizok))
+- Fix an issue with nearest point and lines that start and end at the same point [#4650](https://github.com/tldraw/tldraw/pull/4650) ([@MitjaBezensek](https://github.com/MitjaBezensek))
+- Fix watermark link opening twice [#4622](https://github.com/tldraw/tldraw/pull/4622) ([@vladh](https://github.com/vladh))
+- [bugfix] respect camera constraints after switching page + setting constraints [#4628](https://github.com/tldraw/tldraw/pull/4628) ([@ds300](https://github.com/ds300))
+
+#### 💄 Product Improvements
+
+- [sync] Set instance.isReadonly automatically [#4673](https://github.com/tldraw/tldraw/pull/4673) ([@ds300](https://github.com/ds300))
+- Pass through wheel events over non-scrolling user interface elements [#4662](https://github.com/tldraw/tldraw/pull/4662) ([@steveruizok](https://github.com/steveruizok))
+- selection: allow cmd/ctrl to add to selection [#4570](https://github.com/tldraw/tldraw/pull/4570) ([@mimecuvalo](https://github.com/mimecuvalo) [@steveruizok](https://github.com/steveruizok))
+- watermark: go behind certain elements on the app [#4656](https://github.com/tldraw/tldraw/pull/4656) ([@mimecuvalo](https://github.com/mimecuvalo))
+- Add eslint rule to check that tsdoc params match with function params [#4615](https://github.com/tldraw/tldraw/pull/4615) ([@MitjaBezensek](https://github.com/MitjaBezensek))
+
+#### 🏠 Internal
+
+- dotcom top bar / .tldr file drops [#4661](https://github.com/tldraw/tldraw/pull/4661) ([@steveruizok](https://github.com/steveruizok))
+
+#### Authors: 5
+
+- David Sheldrick ([@ds300](https://github.com/ds300))
+- Mime Čuvalo ([@mimecuvalo](https://github.com/mimecuvalo))
+- Mitja Bezenšek ([@MitjaBezensek](https://github.com/MitjaBezensek))
+- Steve Ruiz ([@steveruizok](https://github.com/steveruizok))
+- Vlad-Stefan Harbuz ([@vladh](https://github.com/vladh))
+
+---
+
 # v3.1.0 (Wed Sep 25 2024)
 
 ### Release Notes

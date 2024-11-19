@@ -1,43 +1,42 @@
-import { useEffect, useState } from 'react'
-import { getFromLocalStorage, setInLocalStorage, uniqueId, useValue } from 'tldraw'
-import { TlaEditor } from '../components/TlaEditor'
-import { TlaWrapperLoggedOut } from '../components/TlaWrapperLoggedOut'
-import { useApp } from '../hooks/useAppState'
-import { TldrawAppFileId, TldrawAppFileRecordType } from '../utils/schema/TldrawAppFile'
+import { useState } from 'react'
+import { Navigate } from 'react-router-dom'
+import { getFromLocalStorage, setInLocalStorage, uniqueId } from 'tldraw'
+import { TlaEditor } from '../components/TlaEditor/TlaEditor'
+import { useMaybeApp } from '../hooks/useAppState'
+import { TlaAnonLayout } from '../layouts/TlaAnonLayout/TlaAnonLayout'
+import { getLocalSessionState } from '../utils/local-session-state'
 import { TEMPORARY_FILE_KEY } from '../utils/temporary-files'
+import { getFilePath } from '../utils/urls'
 
 export function Component() {
-	const app = useApp()
-	const [fileId, setFileId] = useState<TldrawAppFileId | null>(null)
+	const app = useMaybeApp()
 
-	useEffect(() => {
-		// Try to load a temporary file; or otherwise create one
-		let temporaryFileId = getFromLocalStorage(TEMPORARY_FILE_KEY)
+	if (!app) return <LocalTldraw />
+	// Navigate to the most recent file (if there is one) or else a new file
+	const { auth } = getLocalSessionState()
+	const fileId = auth?.userId && app.getUserRecentFiles()[0]?.fileId
+	if (fileId) {
+		return <Navigate to={getFilePath(fileId)} replace />
+	}
+	return <Navigate to={getFilePath(app.createFile().id)} replace state={{ isCreateMode: true }} />
+}
 
-		if (!temporaryFileId) {
-			temporaryFileId = uniqueId()
-			setInLocalStorage(TEMPORARY_FILE_KEY, temporaryFileId)
-		}
+function LocalTldraw() {
+	const [fileSlug] = useState(() => {
+		return getFromLocalStorage(TEMPORARY_FILE_KEY) ?? uniqueId()
+	})
 
-		const fileId = TldrawAppFileRecordType.createId(temporaryFileId)
-
-		const file = app.store.get(fileId)
-
-		if (!file) {
-			app.createFile('temporary', fileId)
-		}
-
-		setFileId(fileId)
-	}, [app])
-
-	const file = useValue(
-		'file',
-		() => {
-			if (!fileId) return null
-			return app.store.get(fileId)
-		},
-		[app, fileId]
+	return (
+		<TlaAnonLayout>
+			<TlaEditor
+				isCreateMode
+				key={fileSlug}
+				fileSlug={fileSlug}
+				onDocumentChange={() => {
+					// Save the file slug to local storage if they actually make changes
+					setInLocalStorage(TEMPORARY_FILE_KEY, fileSlug)
+				}}
+			/>
+		</TlaAnonLayout>
 	)
-
-	return <TlaWrapperLoggedOut>{file && <TlaEditor file={file} />}</TlaWrapperLoggedOut>
 }

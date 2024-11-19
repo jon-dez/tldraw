@@ -9,16 +9,22 @@ import {
 import { createRouter, handleApiRequest, notFound } from '@tldraw/worker-shared'
 import { WorkerEntrypoint } from 'cloudflare:workers'
 import { cors } from 'itty-router'
+import { APP_ID } from './TLAppDurableObject'
+import { createPublishedRoom } from './routes/createPublishedRoom'
 import { createRoom } from './routes/createRoom'
 import { createRoomSnapshot } from './routes/createRoomSnapshot'
+import { deletePublishedRoom } from './routes/deletePublishedRoom'
 import { extractBookmarkMetadata } from './routes/extractBookmarkMetadata'
 import { forwardRoomRequest } from './routes/forwardRoomRequest'
+import { getPublishedRoom } from './routes/getPublishedRoom'
 import { getReadonlySlug } from './routes/getReadonlySlug'
 import { getRoomHistory } from './routes/getRoomHistory'
 import { getRoomHistorySnapshot } from './routes/getRoomHistorySnapshot'
 import { getRoomSnapshot } from './routes/getRoomSnapshot'
 import { joinExistingRoom } from './routes/joinExistingRoom'
 import { Environment } from './types'
+import { getAuth } from './utils/getAuth'
+export { TLAppDurableObject } from './TLAppDurableObject'
 export { TLDrawDurableObject } from './TLDrawDurableObject'
 
 const { preflight, corsify } = cors({
@@ -40,6 +46,24 @@ const router = createRouter<Environment>()
 	.get(`/${READ_ONLY_PREFIX}/:roomId`, (req, env) =>
 		joinExistingRoom(req, env, ROOM_OPEN_MODE.READ_ONLY)
 	)
+	.get('/app/file/:roomId', forwardRoomRequest)
+	.get('/app', async (req, env) => {
+		const auth = await getAuth(req, env)
+		if (!auth?.userId) return notFound()
+
+		// This needs to be a websocket request!
+		if (req.headers.get('upgrade')?.toLowerCase() === 'websocket') {
+			const url = new URL(req.url)
+			url.pathname = `/app/${auth.userId}`
+			// clone the request and add the new url
+			return env.TLAPP_DO.get(env.TLAPP_DO.idFromName(APP_ID)).fetch(new Request(url, req))
+		}
+
+		return notFound()
+	})
+	.get('/app/publish/:roomId', getPublishedRoom)
+	.post('/app/publish/:roomId', createPublishedRoom)
+	.delete('/app/publish/:roomId', deletePublishedRoom)
 	.get(`/${ROOM_PREFIX}/:roomId/history`, getRoomHistory)
 	.get(`/${ROOM_PREFIX}/:roomId/history/:timestamp`, getRoomHistorySnapshot)
 	.get('/readonly-slug/:roomId', getReadonlySlug)

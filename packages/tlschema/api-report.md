@@ -1261,6 +1261,8 @@ export interface TLNoteShapeProps {
     // (undocumented)
     growY: number;
     // (undocumented)
+    labelColor: TLDefaultColorStyle;
+    // (undocumented)
     scale: number;
     // (undocumented)
     size: TLDefaultSizeStyle;
@@ -1380,6 +1382,7 @@ export interface TLStoreProps {
     assets: Required<TLAssetStore>;
     // (undocumented)
     collaboration?: {
+        mode?: null | Signal<'readonly' | 'readwrite'>;
         status: null | Signal<'offline' | 'online'>;
     };
     // (undocumented)

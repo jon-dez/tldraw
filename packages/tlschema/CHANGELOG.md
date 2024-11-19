@@ -1,3 +1,71 @@
+# v3.4.0 (Thu Oct 24 2024)
+
+### Release Notes
+
+#### npm: upgrade eslint v8 → v9 ([#4757](https://github.com/tldraw/tldraw/pull/4757))
+
+- Upgrade eslint v8 → v9
+
+#### Add labelColor for notes. ([#4724](https://github.com/tldraw/tldraw/pull/4724))
+
+- Adds `labelColor` for Note shapes.
+
+---
+
+#### 🐛 Bug Fix
+
+- roll back changes from bad deploy [#4780](https://github.com/tldraw/tldraw/pull/4780) ([@SomeHats](https://github.com/SomeHats))
+- Update CHANGELOG.md \[skip ci\] ([@huppy-bot[bot]](https://github.com/huppy-bot[bot]))
+
+#### 💄 Product Improvements
+
+- npm: upgrade eslint v8 → v9 [#4757](https://github.com/tldraw/tldraw/pull/4757) ([@mimecuvalo](https://github.com/mimecuvalo) [@SomeHats](https://github.com/SomeHats) [@ds300](https://github.com/ds300) [@MitjaBezensek](https://github.com/MitjaBezensek) [@steveruizok](https://github.com/steveruizok))
+
+#### 🎉 New Features
+
+- Add labelColor for notes. [#4724](https://github.com/tldraw/tldraw/pull/4724) ([@steveruizok](https://github.com/steveruizok))
+
+#### Authors: 6
+
+- [@huppy-bot[bot]](https://github.com/huppy-bot[bot])
+- alex ([@SomeHats](https://github.com/SomeHats))
+- David Sheldrick ([@ds300](https://github.com/ds300))
+- Mime Čuvalo ([@mimecuvalo](https://github.com/mimecuvalo))
+- Mitja Bezenšek ([@MitjaBezensek](https://github.com/MitjaBezensek))
+- Steve Ruiz ([@steveruizok](https://github.com/steveruizok))
+
+---
+
+# v3.3.0 (Wed Oct 09 2024)
+
+### Release Notes
+
+#### [sync] Set instance.isReadonly automatically ([#4673](https://github.com/tldraw/tldraw/pull/4673))
+
+- Puts the editor into readonly mode automatically when the tlsync server responds in readonly mode.
+- Adds the `editor.getIsReadonly()` method.
+- Fixes a bug where arrow labels could be edited in readonly mode.
+
+#### Disable debug mode in development by default ([#4629](https://github.com/tldraw/tldraw/pull/4629))
+
+- Turns off debug mode by default in local development.
+
+---
+
+#### 🐛 Bug Fix
+
+- Disable debug mode in development by default [#4629](https://github.com/tldraw/tldraw/pull/4629) ([@ds300](https://github.com/ds300))
+
+#### 💄 Product Improvements
+
+- [sync] Set instance.isReadonly automatically [#4673](https://github.com/tldraw/tldraw/pull/4673) ([@ds300](https://github.com/ds300))
+
+#### Authors: 1
+
+- David Sheldrick ([@ds300](https://github.com/ds300))
+
+---
+
 # v3.1.0 (Wed Sep 25 2024)
 
 #### 🐛 Bug Fix

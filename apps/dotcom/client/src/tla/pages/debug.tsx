@@ -1,92 +1,50 @@
+import { SignOutButton } from '@clerk/clerk-react'
+import { TldrawAppUserRecordType } from '@tldraw/dotcom-shared'
 import { Fragment } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { TlaButton } from '../components/TlaButton'
-import { TlaDivider } from '../components/TlaDivider'
-import { TlaSpacer } from '../components/TlaSpacer'
-import { TlaWrapperPage } from '../components/TlaWrapperPage'
+import { TlaButton } from '../components/TlaButton/TlaButton'
+import { TlaSpacer } from '../components/TlaSpacer/TlaSpacer'
+import { TlaFormDivider } from '../components/tla-form/tla-form'
 import { useApp } from '../hooks/useAppState'
 import { useFlags } from '../hooks/useFlags'
+import { useRaw } from '../hooks/useRaw'
 import { useSessionState } from '../hooks/useSessionState'
-import { TldrawAppUserId, TldrawAppUserRecordType } from '../utils/schema/TldrawAppUser'
+import { TlaPageLayout } from '../layouts/TlaPageLayout/TlaPageLayout'
+import { getLocalSessionState, updateLocalSessionState } from '../utils/local-session-state'
 
 export function Component() {
-	const app = useApp()
-	const navigate = useNavigate()
-
-	function handleSignInAsUser(userId: TldrawAppUserId) {
-		const current = app.getSessionState()
-		if (!current.auth) throw Error('No auth')
-		app.setSessionState({
-			...current,
-			auth: {
-				...current.auth,
-				userId,
-			},
-		})
-		navigate('/q')
-	}
-
+	const raw = useRaw()
 	return (
-		<TlaWrapperPage>
+		<TlaPageLayout>
 			<div className="tla-page__header">
-				<h2 className="tla-text_ui__big">Debug</h2>
+				<h2 className="tla-text_ui__big">{raw('Debug')}</h2>
 			</div>
 			<TlaSpacer height={40} />
-			<h2>Users</h2>
+			<h2>{raw('Users')}</h2>
 			<TlaSpacer height={20} />
 			<div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: 'fit-content' }}>
-				<TlaButton
-					variant="primary"
-					onClick={() => {
-						handleSignInAsUser(TldrawAppUserRecordType.createId('0')) // steve
-					}}
-				>
-					Sign in as Steve
-				</TlaButton>
-				<TlaButton
-					variant="primary"
-					onClick={() => {
-						handleSignInAsUser(TldrawAppUserRecordType.createId('1')) // david
-					}}
-				>
-					Sign in as David
-				</TlaButton>
-				<TlaButton
-					variant="primary"
-					onClick={() => {
-						handleSignInAsUser(TldrawAppUserRecordType.createId('2')) // alex
-					}}
-				>
-					Sign in as Alex
-				</TlaButton>
-				<TlaButton
-					variant="warning"
-					onClick={async () => {
-						await app.resetDatabase()
-						window.location.reload()
-					}}
-				>
-					Reset database
-				</TlaButton>
+				<SignOutButton redirectUrl="/q">
+					<TlaButton variant="warning">{raw('Sign out')}</TlaButton>
+				</SignOutButton>
 			</div>
 			<TlaSpacer height={40} />
-			<TlaDivider />
+			<TlaFormDivider />
 			<TlaSpacer height={40} />
-			<h2>Flags</h2>
+			<h2>{raw('Flags')}</h2>
 			<TlaSpacer height={20} />
 			<Flags />
 			<TlaSpacer height={40} />
-			<TlaDivider />
+			<TlaFormDivider />
 			<TlaSpacer height={40} />
-			<h2>Theme</h2>
+			<h2>{raw('Theme')}</h2>
 			<TlaSpacer height={20} />
 			<DarkMode />
-		</TlaWrapperPage>
+		</TlaPageLayout>
 	)
 }
 
 function Flags() {
 	const app = useApp()
+	const raw = useRaw()
 	const flags = useFlags()
 
 	return (
@@ -107,7 +65,7 @@ function Flags() {
 						type="checkbox"
 						checked={!!value}
 						onChange={() => {
-							const current = app.getSessionState()
+							const current = getLocalSessionState()
 							if (!current.auth) throw Error('No auth')
 							const user = app.store.get(current.auth.userId)
 							if (!user) throw Error('No user')
@@ -128,7 +86,7 @@ function Flags() {
 			<TlaButton
 				onClick={() => {
 					const defaultUser = TldrawAppUserRecordType.createDefaultProperties()
-					const current = app.getSessionState()
+					const current = getLocalSessionState()
 					if (!current.auth) throw Error('No auth')
 					const user = app.store.get(current.auth.userId)
 					if (!user) throw Error('No user')
@@ -141,7 +99,7 @@ function Flags() {
 					])
 				}}
 			>
-				Reset defaults
+				{raw('Reset defaults')}
 			</TlaButton>
 		</div>
 	)
@@ -149,6 +107,7 @@ function Flags() {
 
 function DarkMode() {
 	const app = useApp()
+	const raw = useRaw()
 	const isDarkMode = useSessionState().theme === 'dark'
 	return (
 		<div
@@ -160,20 +119,19 @@ function DarkMode() {
 				rowGap: 4,
 			}}
 		>
-			<label htmlFor="dark mode">Dark mode</label>
+			<label htmlFor="dark mode">{raw('Dark mode')}</label>
 			<input
 				name="dark mode"
 				type="checkbox"
 				checked={isDarkMode}
 				onChange={() => {
-					const current = app.getSessionState()
+					const current = getLocalSessionState()
 					if (!current.auth) throw Error('No auth')
 					const user = app.store.get(current.auth.userId)
 					if (!user) throw Error('No user')
-					app.setSessionState({
-						...app.getSessionState(),
+					updateLocalSessionState(() => ({
 						theme: isDarkMode ? 'light' : 'dark',
-					})
+					}))
 				}}
 			/>
 		</div>

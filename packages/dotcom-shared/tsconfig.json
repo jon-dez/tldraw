@@ -8,7 +8,19 @@
 	},
 	"references": [
 		{
+			"path": "../store"
+		},
+		{
 			"path": "../tldraw"
+		},
+		{
+			"path": "../tlschema"
+		},
+		{
+			"path": "../utils"
+		},
+		{
+			"path": "../validate"
 		}
 	]
 }

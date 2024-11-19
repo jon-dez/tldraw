@@ -1,3 +1,97 @@
+# v3.4.0 (Thu Oct 24 2024)
+
+### Release Notes
+
+#### npm: upgrade eslint v8 → v9 ([#4757](https://github.com/tldraw/tldraw/pull/4757))
+
+- Upgrade eslint v8 → v9
+
+---
+
+#### 🐛 Bug Fix
+
+- roll back changes from bad deploy [#4780](https://github.com/tldraw/tldraw/pull/4780) ([@SomeHats](https://github.com/SomeHats))
+- Update CHANGELOG.md \[skip ci\] ([@huppy-bot[bot]](https://github.com/huppy-bot[bot]))
+- [botcom] Fix file deletion and creation [#4751](https://github.com/tldraw/tldraw/pull/4751) ([@ds300](https://github.com/ds300))
+- botcom: account menu [bk] [#4683](https://github.com/tldraw/tldraw/pull/4683) ([@mimecuvalo](https://github.com/mimecuvalo))
+
+#### 💄 Product Improvements
+
+- npm: upgrade eslint v8 → v9 [#4757](https://github.com/tldraw/tldraw/pull/4757) ([@mimecuvalo](https://github.com/mimecuvalo) [@SomeHats](https://github.com/SomeHats) [@ds300](https://github.com/ds300) [@MitjaBezensek](https://github.com/MitjaBezensek) [@steveruizok](https://github.com/steveruizok))
+
+#### Authors: 6
+
+- [@huppy-bot[bot]](https://github.com/huppy-bot[bot])
+- alex ([@SomeHats](https://github.com/SomeHats))
+- David Sheldrick ([@ds300](https://github.com/ds300))
+- Mime Čuvalo ([@mimecuvalo](https://github.com/mimecuvalo))
+- Mitja Bezenšek ([@MitjaBezensek](https://github.com/MitjaBezensek))
+- Steve Ruiz ([@steveruizok](https://github.com/steveruizok))
+
+---
+
+# v3.3.0 (Wed Oct 09 2024)
+
+### Release Notes
+
+#### [botcom] sharing ([#4654](https://github.com/tldraw/tldraw/pull/4654))
+
+- Fixed a bug with…
+
+#### [sync] refine error handling + room.closeSession method ([#4660](https://github.com/tldraw/tldraw/pull/4660))
+
+- Adds a `closeSession` to the `TLSocketRoom` class, for terminating or restarting a client's socket connection.
+
+#### [sync] Expose sessions and individual records on TLSocketRoom ([#4677](https://github.com/tldraw/tldraw/pull/4677))
+
+- [sync] Adds a couple of new methods to the TLSocketRoom class:
+  - `getRecord` - for getting an individual record
+  - `getSessions` - for getting a list of the active sessions
+
+#### [sync] Set instance.isReadonly automatically ([#4673](https://github.com/tldraw/tldraw/pull/4673))
+
+- Puts the editor into readonly mode automatically when the tlsync server responds in readonly mode.
+- Adds the `editor.getIsReadonly()` method.
+- Fixes a bug where arrow labels could be edited in readonly mode.
+
+#### [sync] readonly mode ([#4648](https://github.com/tldraw/tldraw/pull/4648))
+
+- [tldraw sync] Adds `isReadonly` mode for socket connections.
+
+#### Add eslint rule to check that tsdoc params match with function params ([#4615](https://github.com/tldraw/tldraw/pull/4615))
+
+- Add lint rules to check for discrepancies between tsdoc params and function params and fix all the discovered issues.
+
+---
+
+#### 🐛 Bug Fix
+
+- [botcom] use tlsync as prototype backend [#4617](https://github.com/tldraw/tldraw/pull/4617) ([@ds300](https://github.com/ds300) [@steveruizok](https://github.com/steveruizok))
+
+#### 💄 Product Improvements
+
+- [sync] refine error handling + room.closeSession method [#4660](https://github.com/tldraw/tldraw/pull/4660) ([@ds300](https://github.com/ds300))
+- [sync] Set instance.isReadonly automatically [#4673](https://github.com/tldraw/tldraw/pull/4673) ([@ds300](https://github.com/ds300))
+- [sync] readonly mode [#4648](https://github.com/tldraw/tldraw/pull/4648) ([@ds300](https://github.com/ds300))
+- Add eslint rule to check that tsdoc params match with function params [#4615](https://github.com/tldraw/tldraw/pull/4615) ([@MitjaBezensek](https://github.com/MitjaBezensek))
+
+#### 🎉 New Features
+
+- [botcom] sharing [#4654](https://github.com/tldraw/tldraw/pull/4654) ([@ds300](https://github.com/ds300) [@steveruizok](https://github.com/steveruizok))
+- [botcom] Use auth on backend [#4639](https://github.com/tldraw/tldraw/pull/4639) ([@ds300](https://github.com/ds300))
+
+#### 🛠️ API Changes
+
+- [sync] Expose sessions and individual records on TLSocketRoom [#4677](https://github.com/tldraw/tldraw/pull/4677) ([@ds300](https://github.com/ds300))
+
+#### Authors: 3
+
+- David Sheldrick ([@ds300](https://github.com/ds300))
+- Mitja Bezenšek ([@MitjaBezensek](https://github.com/MitjaBezensek))
+- Steve Ruiz ([@steveruizok](https://github.com/steveruizok))
+
+---
+
 # v3.1.0 (Wed Sep 25 2024)
 
 ### Release Notes
