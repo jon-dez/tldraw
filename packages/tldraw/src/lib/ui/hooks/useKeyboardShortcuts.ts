@@ -146,6 +146,11 @@ export function useKeyboardShortcuts() {
 	}, [actions, tools, isReadonlyMode, editor, container, isFocused])
 }
 
+// Shift is !
+// Alt is ?
+// Cmd / control is $
+// so cmd+shift+u would be $!u
+
 function getHotkeysStringFromKbd(kbd: string) {
 	return getKeys(kbd)
 		.map((kbd) => {
