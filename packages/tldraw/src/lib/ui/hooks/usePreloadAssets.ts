@@ -8,7 +8,7 @@ enum PreloadStatus {
 	WAITING,
 }
 
-const usePreloadFont = (id: string, font: TLTypeFace): PreloadStatus => {
+const usePreloadFont = (id: string, font: TLTypeFace, targetDocument?: Document): PreloadStatus => {
 	const [state, setState] = useState<PreloadStatus>(PreloadStatus.WAITING)
 
 	useEffect(() => {
@@ -16,7 +16,7 @@ const usePreloadFont = (id: string, font: TLTypeFace): PreloadStatus => {
 
 		setState(PreloadStatus.WAITING)
 
-		preloadFont(id, font)
+		preloadFont(id, font, targetDocument)
 			.then(() => {
 				if (cancelled) return
 				setState(PreloadStatus.SUCCESS)
@@ -30,7 +30,7 @@ const usePreloadFont = (id: string, font: TLTypeFace): PreloadStatus => {
 		return () => {
 			cancelled = true
 		}
-	}, [id, font])
+	}, [id, font, targetDocument])
 
 	return state
 }
@@ -57,14 +57,14 @@ function getTypefaces(assetUrls: TLEditorAssetUrls) {
 }
 
 /** @public */
-export function usePreloadAssets(assetUrls: TLEditorAssetUrls) {
+export function usePreloadAssets(assetUrls: TLEditorAssetUrls, targetDocument?: Document) {
 	const typefaces = useMemo(() => getTypefaces(assetUrls), [assetUrls])
 
 	const results = [
-		usePreloadFont('tldraw_draw', typefaces.draw),
-		usePreloadFont('tldraw_serif', typefaces.serif),
-		usePreloadFont('tldraw_sans', typefaces.sansSerif),
-		usePreloadFont('tldraw_mono', typefaces.monospace),
+		usePreloadFont('tldraw_draw', typefaces.draw, targetDocument),
+		usePreloadFont('tldraw_serif', typefaces.serif, targetDocument),
+		usePreloadFont('tldraw_sans', typefaces.sansSerif, targetDocument),
+		usePreloadFont('tldraw_mono', typefaces.monospace, targetDocument),
 	]
 
 	return {

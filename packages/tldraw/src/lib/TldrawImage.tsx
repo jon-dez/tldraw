@@ -58,6 +58,14 @@ export interface TldrawImageProps extends TLImageExportOptions {
 	 * Asset URL overrides.
 	 */
 	assetUrls?: TLUiAssetUrlOverrides
+	/**
+	 * The document to use in place of the global document object for the following:
+	 *
+	 * - preloading fonts
+	 *
+	 * Using this prevents bugs when using pop-out windows in Electron.
+	 */
+	targetDocument?: Document
 }
 
 /**
@@ -95,8 +103,13 @@ export const TldrawImage = memo(function TldrawImage(props: TldrawImageProps) {
 		shapeUtils: shapeUtilsWithDefaults,
 	})
 
+	const targetDocument = props.targetDocument ?? document
+
 	const assets = useDefaultEditorAssetsWithOverrides(props.assetUrls)
-	const { done: preloadingComplete, error: preloadingError } = usePreloadAssets(assets)
+	const { done: preloadingComplete, error: preloadingError } = usePreloadAssets(
+		assets,
+		targetDocument
+	)
 
 	const {
 		pageId,
@@ -118,7 +131,7 @@ export const TldrawImage = memo(function TldrawImage(props: TldrawImageProps) {
 
 		let isCancelled = false
 
-		const tempElm = document.createElement('div')
+		const tempElm = targetDocument.createElement('div')
 		container.appendChild(tempElm)
 		container.classList.add('tl-container', 'tl-theme__light')
 
@@ -191,6 +204,7 @@ export const TldrawImage = memo(function TldrawImage(props: TldrawImageProps) {
 		preloadingError,
 		licenseKey,
 		pixelRatio,
+		targetDocument,
 	])
 
 	if (preloadingError) {

@@ -68,6 +68,14 @@ export interface TldrawBaseProps
 		TLExternalContentProps {
 	components?: TLComponents
 	embeds?: TLEmbedDefinition[]
+	/**
+	 * The document to use in place of the global document object for the following:
+	 *
+	 * - preloading fonts
+	 *
+	 * Using this prevents bugs when using pop-out windows in Electron.
+	 */
+	targetDocument?: Document
 }
 
 /** @public */
@@ -87,6 +95,7 @@ export function Tldraw(props: TldrawProps) {
 		bindingUtils = [],
 		tools = [],
 		embeds,
+		targetDocument,
 		...rest
 	} = props
 
@@ -135,7 +144,10 @@ export function Tldraw(props: TldrawProps) {
 	)
 
 	const assets = useDefaultEditorAssetsWithOverrides(rest.assetUrls)
-	const { done: preloadingComplete, error: preloadingError } = usePreloadAssets(assets)
+	const { done: preloadingComplete, error: preloadingError } = usePreloadAssets(
+		assets,
+		targetDocument
+	)
 	if (preloadingError) {
 		return <ErrorScreen>Could not load assets. Please refresh the page.</ErrorScreen>
 	}

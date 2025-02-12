@@ -1674,7 +1674,7 @@ export enum PORTRAIT_BREAKPOINT {
 export function PreferencesGroup(): JSX_2.Element;
 
 // @public (undocumented)
-export function preloadFont(id: string, font: TLTypeFace): Promise<FontFace>;
+export function preloadFont(id: string, font: TLTypeFace, targetDocument?: Document): Promise<FontFace>;
 
 // @public (undocumented)
 export function PrintItem(): JSX_2.Element;
@@ -2005,6 +2005,7 @@ export interface TldrawBaseProps extends TldrawUiProps, TldrawEditorBaseProps, T
     components?: TLComponents;
     // (undocumented)
     embeds?: TLEmbedDefinition[];
+    targetDocument?: Document;
 }
 
 // @public (undocumented)
@@ -2051,6 +2052,7 @@ export interface TldrawImageProps extends TLImageExportOptions {
     pageId?: TLPageId;
     shapeUtils?: readonly TLAnyShapeUtilConstructor[];
     snapshot: Partial<TLEditorSnapshot> | TLStoreSnapshot;
+    targetDocument?: Document;
 }
 
 // @public (undocumented)
@@ -3824,7 +3826,7 @@ export function useNativeClipboardEvents(): void;
 export function usePrefersReducedMotion(): boolean;
 
 // @public (undocumented)
-export function usePreloadAssets(assetUrls: TLEditorAssetUrls): {
+export function usePreloadAssets(assetUrls: TLEditorAssetUrls, targetDocument?: Document): {
     done: boolean;
     error: boolean;
 };
