@@ -8,7 +8,7 @@ import { Editor } from '../Editor'
 /** @public */
 export interface SvgExportDef {
 	key: string
-	getElement(): Promise<ReactElement | null> | ReactElement | null
+	getElement(document: Document): Promise<ReactElement | null> | ReactElement | null
 }
 
 /** @public */

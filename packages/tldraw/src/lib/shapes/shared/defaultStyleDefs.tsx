@@ -25,8 +25,8 @@ import { useDefaultColorTheme } from './useDefaultColorTheme'
 export function getFontDefForExport(fontStyle: TLDefaultFontStyle): SvgExportDef {
 	return {
 		key: `${DefaultFontStyle.id}:${fontStyle}`,
-		async getElement() {
-			const fontInfo = findFontInfo(fontStyle)
+		async getElement(document) {
+			const fontInfo = findFontInfo(fontStyle, document)
 			if (!fontInfo) return null
 
 			const { url, fontFaceRule } = fontInfo
@@ -40,7 +40,7 @@ export function getFontDefForExport(fontStyle: TLDefaultFontStyle): SvgExportDef
 	}
 }
 
-function findFontInfo(name: TLDefaultFontStyle) {
+function findFontInfo(name: TLDefaultFontStyle, document: Document) {
 	const fontFamily = DefaultFontFamilies[name]
 	for (const font of document.fonts) {
 		if (fontFamily.includes(font.family)) {
@@ -108,6 +108,7 @@ const generateImage = (dpr: number, currentZoom: number, darkMode: boolean) => {
 	return new Promise<Blob>((resolve, reject) => {
 		const size = TILE_PATTERN_SIZE * currentZoom * dpr
 
+		// NOTE: Maybe use editor container's ownerDocument
 		const canvasEl = document.createElement('canvas')
 		canvasEl.width = size
 		canvasEl.height = size
@@ -151,6 +152,7 @@ const generateImage = (dpr: number, currentZoom: number, darkMode: boolean) => {
 }
 
 const canvasBlob = (size: [number, number], fn: (ctx: CanvasRenderingContext2D) => void) => {
+	// NOTE: Maybe use editor container's ownerDocument
 	const canvas = document.createElement('canvas')
 	canvas.width = size[0]
 	canvas.height = size[1]

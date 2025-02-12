@@ -41,7 +41,7 @@ export class TextManager {
 	private baseElem: HTMLDivElement
 
 	constructor(public editor: Editor) {
-		this.baseElem = document.createElement('div')
+		this.baseElem = editor.getContainer().ownerDocument.createElement('div')
 		this.baseElem.classList.add('tl-text')
 		this.baseElem.classList.add('tl-text-measure')
 		this.baseElem.tabIndex = -1
