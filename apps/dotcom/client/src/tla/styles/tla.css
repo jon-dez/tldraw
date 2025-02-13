@@ -31,7 +31,7 @@
 
 .tla-theme__light {
 	--tla-color-sidebar: hsl(0, 0%, 99%);
-	--tla-color-tooltip: hsla(200, 14%, 4%, 0.838);
+	--tla-color-tooltip: hsla(200, 14%, 4%, 1);
 	--tla-color-canvas: hsl(210, 20%, 98%);
 	--tla-color-panel: hsl(0, 0%, 100%);
 	--tla-color-text-1: hsl(204, 8%, 5%);
@@ -232,6 +232,7 @@
 /* Fix the location of the focus button */
 
 .tlui-focus-button {
+	width: 40px;
 	margin-top: 4px;
 	margin-left: 4px;
 }
@@ -255,44 +256,4 @@
 .tla-lang-highlight-missing .i18n-msg,
 .tla-lang-highlight-missing .i18n-msg * {
 	text-shadow: none;
-}
-
-.tla-playground {
-	position: absolute;
-	inset: 0px;
-	padding: 1em;
-	background-color: #efefef;
-	overflow: auto;
-}
-
-/* Use standard spacing for headings */
-
-.tla-playground h1 {
-	margin-top: 0.67em;
-	margin-bottom: 0.67em;
-}
-
-.tla-playground h2 {
-	margin-top: 0.83em;
-	margin-bottom: 0.83em;
-}
-
-.tla-playground h3 {
-	margin-top: 1em;
-	margin-bottom: 1em;
-}
-
-.tla-playground h4 {
-	margin-top: 1.33em;
-	margin-bottom: 1.33em;
-}
-
-.tla-playground h5 {
-	margin-top: 1.67em;
-	margin-bottom: 1.67em;
-}
-
-.tla-playground h6 {
-	margin-top: 2.33em;
-	margin-bottom: 2.33em;
 }

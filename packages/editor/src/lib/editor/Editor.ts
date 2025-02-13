@@ -104,6 +104,7 @@ import {
 	ZOOM_TO_FIT_PADDING,
 } from '../constants'
 import { exportToSvg } from '../exports/exportToSvg'
+import { getSvgAsImage } from '../exports/getSvgAsImage'
 import { tlenv } from '../globals/environment'
 import { tlmenus } from '../globals/menus'
 import { tltime } from '../globals/time'
@@ -154,7 +155,7 @@ import {
 	TLPointerEventInfo,
 	TLWheelEventInfo,
 } from './types/event-types'
-import { TLExternalAssetContent, TLExternalContent } from './types/external-content'
+import { TLExternalAsset, TLExternalContent } from './types/external-content'
 import { TLHistoryBatchOptions } from './types/history-types'
 import {
 	OptionalKeys,
@@ -162,6 +163,7 @@ import {
 	TLCameraMoveOptions,
 	TLCameraOptions,
 	TLImageExportOptions,
+	TLSvgExportOptions,
 } from './types/misc-types'
 import { TLResizeHandle } from './types/selection-types'
 
@@ -927,6 +929,21 @@ export class Editor extends EventEmitter<TLEventMap> {
 		return shapeUtil
 	}
 
+	/**
+	 * Returns true if the editor has a shape util for the given shape / shape type.
+	 *
+	 * @param shape - A shape, shape partial, or shape type.
+	 */
+	hasShapeUtil<S extends TLUnknownShape>(shape: S | TLShapePartial<S>): boolean
+	hasShapeUtil<S extends TLUnknownShape>(type: S['type']): boolean
+	hasShapeUtil<T extends ShapeUtil>(
+		type: T extends ShapeUtil<infer R> ? R['type'] : string
+	): boolean
+	hasShapeUtil(arg: string | { type: string }): boolean {
+		const type = typeof arg === 'string' ? arg : arg.type
+		return hasOwnProperty(this.shapeUtils, type)
+	}
+
 	/* ------------------- Binding Utils ------------------ */
 	/**
 	 * A map of shape utility classes (TLShapeUtils) by shape type.
@@ -1218,18 +1235,7 @@ export class Editor extends EventEmitter<TLEventMap> {
 	}
 
 	/** @internal */
-	createErrorAnnotations(
-		origin: string,
-		willCrashApp: boolean | 'unknown'
-	): {
-		tags: { origin: string; willCrashApp: boolean | 'unknown' }
-		extras: {
-			activeStateNode?: string
-			selectedShapes?: TLUnknownShape[]
-			editingShape?: TLUnknownShape
-			inputs?: Record<string, unknown>
-		}
-	} {
+	createErrorAnnotations(origin: string, willCrashApp: boolean | 'unknown') {
 		try {
 			const editingShapeId = this.getEditingShapeId()
 			return {
@@ -1239,9 +1245,20 @@ export class Editor extends EventEmitter<TLEventMap> {
 				},
 				extras: {
 					activeStateNode: this.root.getPath(),
-					selectedShapes: this.getSelectedShapes(),
+					selectedShapes: this.getSelectedShapes().map((s) => {
+						const { props, ...rest } = s
+						const { text: _text, richText: _richText, ...restProps } = props as any
+						return {
+							...rest,
+							props: restProps,
+						}
+					}),
+					selectionCount: this.getSelectedShapes().length,
 					editingShape: editingShapeId ? this.getShape(editingShapeId) : undefined,
 					inputs: this.inputs,
+					pageState: this.getCurrentPageState(),
+					instanceState: this.getInstanceState(),
+					collaboratorCount: this.getCollaboratorsOnCurrentPage().length,
 				},
 			}
 		} catch {
@@ -1383,8 +1400,8 @@ export class Editor extends EventEmitter<TLEventMap> {
 	 *
 	 * @example
 	 * ```ts
-	 * state.getStateDescendant('select')
-	 * state.getStateDescendant('select.brushing')
+	 * editor.getStateDescendant('select')
+	 * editor.getStateDescendant('select.brushing')
 	 * ```
 	 *
 	 * @param path - The descendant's path of state ids, separated by periods.
@@ -1458,10 +1475,10 @@ export class Editor extends EventEmitter<TLEventMap> {
 		if (partial.isChangingStyle !== undefined) {
 			clearTimeout(this._isChangingStyleTimeout)
 			if (partial.isChangingStyle === true) {
-				// If we've set to true, set a new reset timeout to change the value back to false after 2 seconds
+				// If we've set to true, set a new reset timeout to change the value back to false after 1 seconds
 				this._isChangingStyleTimeout = this.timers.setTimeout(() => {
 					this._updateInstanceState({ isChangingStyle: false }, { history: 'ignore' })
-				}, 2000)
+				}, 1000)
 			}
 		}
 
@@ -1664,7 +1681,7 @@ export class Editor extends EventEmitter<TLEventMap> {
 	 * @public
 	 */
 	isAncestorSelected(shape: TLShape | TLShapeId): boolean {
-		const id = typeof shape === 'string' ? shape : shape?.id ?? null
+		const id = typeof shape === 'string' ? shape : (shape?.id ?? null)
 		const _shape = this.getShape(id)
 		if (!_shape) return false
 		const selectedShapeIds = this.getSelectedShapeIds()
@@ -1921,7 +1938,7 @@ export class Editor extends EventEmitter<TLEventMap> {
 	 * @public
 	 */
 	setFocusedGroup(shape: TLShapeId | TLGroupShape | null): this {
-		const id = typeof shape === 'string' ? shape : shape?.id ?? null
+		const id = typeof shape === 'string' ? shape : (shape?.id ?? null)
 
 		if (id !== null) {
 			const shape = this.getShape(id)
@@ -2004,7 +2021,7 @@ export class Editor extends EventEmitter<TLEventMap> {
 	 * @public
 	 */
 	setEditingShape(shape: TLShapeId | TLShape | null): this {
-		const id = typeof shape === 'string' ? shape : shape?.id ?? null
+		const id = typeof shape === 'string' ? shape : (shape?.id ?? null)
 		if (id !== this.getEditingShapeId()) {
 			if (id) {
 				const shape = this.getShape(id)
@@ -2065,7 +2082,7 @@ export class Editor extends EventEmitter<TLEventMap> {
 	 * @public
 	 */
 	setHoveredShape(shape: TLShapeId | TLShape | null): this {
-		const id = typeof shape === 'string' ? shape : shape?.id ?? null
+		const id = typeof shape === 'string' ? shape : (shape?.id ?? null)
 		if (id === this.getHoveredShapeId()) return this
 		this.run(
 			() => {
@@ -2214,7 +2231,7 @@ export class Editor extends EventEmitter<TLEventMap> {
 	 * @public
 	 */
 	setCroppingShape(shape: TLShapeId | TLShape | null): this {
-		const id = typeof shape === 'string' ? shape : shape?.id ?? null
+		const id = typeof shape === 'string' ? shape : (shape?.id ?? null)
 		if (id !== this.getCroppingShapeId()) {
 			this.run(
 				() => {
@@ -4145,20 +4162,24 @@ export class Editor extends EventEmitter<TLEventMap> {
 		context: {
 			screenScale?: number
 			shouldResolveToOriginal?: boolean
+			dpr?: number
 		}
 	): Promise<string | null> {
 		if (!assetId) return null
 		const asset = this.getAsset(assetId)
 		if (!asset) return null
 
-		const { screenScale = 1, shouldResolveToOriginal = false } = context
+		const {
+			screenScale = 1,
+			shouldResolveToOriginal = false,
+			dpr = this.getInstanceState().devicePixelRatio,
+		} = context
 
 		// We only look at the zoom level at powers of 2.
 		const zoomStepFunction = (zoom: number) => Math.pow(2, Math.ceil(Math.log2(zoom)))
-		const steppedScreenScale = Math.max(0.125, zoomStepFunction(screenScale))
+		const steppedScreenScale = zoomStepFunction(screenScale)
 		const networkEffectiveType: string | null =
 			'connection' in navigator ? (navigator as any).connection.effectiveType : null
-		const dpr = this.getInstanceState().devicePixelRatio
 
 		return await this.store.props.assets.resolve(asset, {
 			screenScale: screenScale || 1,
@@ -4172,7 +4193,11 @@ export class Editor extends EventEmitter<TLEventMap> {
 	 * Upload an asset to the store's asset service, returning a URL that can be used to resolve the
 	 * asset.
 	 */
-	async uploadAsset(asset: TLAsset, file: File, abortSignal?: AbortSignal): Promise<string> {
+	async uploadAsset(
+		asset: TLAsset,
+		file: File,
+		abortSignal?: AbortSignal
+	): Promise<{ src: string; meta?: JsonObject }> {
 		return await this.store.props.assets.upload(asset, file, abortSignal)
 	}
 
@@ -6750,6 +6775,8 @@ export class Editor extends EventEmitter<TLEventMap> {
 			}
 		}
 
+		let didResize = false
+
 		if (util.onResize && util.canResize(initialShape)) {
 			// get the model changes from the shape util
 			const newPagePoint = this._scalePagePoint(
@@ -6788,24 +6815,30 @@ export class Editor extends EventEmitter<TLEventMap> {
 				)
 			}
 
+			const resizedShape = util.onResize(
+				{ ...initialShape, x, y },
+				{
+					newPoint: newLocalPoint,
+					handle: opts.dragHandle ?? 'bottom_right',
+					// don't set isSingle to true for children
+					mode: opts.mode ?? 'scale_shape',
+					scaleX: myScale.x,
+					scaleY: myScale.y,
+					initialBounds,
+					initialShape,
+				}
+			)
+
+			if (resizedShape) {
+				didResize = true
+			}
+
 			workingShape = applyPartialToRecordWithProps(workingShape, {
 				id,
 				type: initialShape.type as any,
 				x: newLocalPoint.x,
 				y: newLocalPoint.y,
-				...util.onResize(
-					{ ...initialShape, x, y },
-					{
-						newPoint: newLocalPoint,
-						handle: opts.dragHandle ?? 'bottom_right',
-						// don't set isSingle to true for children
-						mode: opts.mode ?? 'scale_shape',
-						scaleX: myScale.x,
-						scaleY: myScale.y,
-						initialBounds,
-						initialShape,
-					}
-				),
+				...resizedShape,
 			})
 
 			if (!opts.skipStartAndEndCallbacks) {
@@ -6816,7 +6849,11 @@ export class Editor extends EventEmitter<TLEventMap> {
 			}
 
 			this.updateShapes([workingShape])
-		} else {
+		}
+
+		if (!didResize) {
+			// reposition shape (rather than resizing it) based on where its resized center would be
+
 			const initialPageCenter = Mat.applyToPoint(pageTransform, initialBounds.center)
 			// get the model changes from the shape util
 			const newPageCenter = this._scalePagePoint(
@@ -7938,10 +7975,8 @@ export class Editor extends EventEmitter<TLEventMap> {
 
 	/** @internal */
 	externalAssetContentHandlers: {
-		[K in TLExternalAssetContent['type']]: {
-			[Key in K]:
-				| null
-				| ((info: TLExternalAssetContent & { type: Key }) => Promise<TLAsset | undefined>)
+		[K in TLExternalAsset['type']]: {
+			[Key in K]: null | ((info: TLExternalAsset & { type: Key }) => Promise<TLAsset | undefined>)
 		}[K]
 	} = {
 		file: null,
@@ -7970,9 +8005,9 @@ export class Editor extends EventEmitter<TLEventMap> {
 	 *
 	 * @public
 	 */
-	registerExternalAssetHandler<T extends TLExternalAssetContent['type']>(
+	registerExternalAssetHandler<T extends TLExternalAsset['type']>(
 		type: T,
-		handler: null | ((info: TLExternalAssetContent & { type: T }) => Promise<TLAsset>)
+		handler: null | ((info: TLExternalAsset & { type: T }) => Promise<TLAsset>)
 	): this {
 		this.externalAssetContentHandlers[type] = handler as any
 		return this
@@ -8040,18 +8075,18 @@ export class Editor extends EventEmitter<TLEventMap> {
 	 * @param info - Info about the external content.
 	 * @returns The asset.
 	 */
-	async getAssetForExternalContent(info: TLExternalAssetContent): Promise<TLAsset | undefined> {
+	async getAssetForExternalContent(info: TLExternalAsset): Promise<TLAsset | undefined> {
 		return await this.externalAssetContentHandlers[info.type]?.(info as any)
 	}
 
-	hasExternalAssetHandler(type: TLExternalAssetContent['type']): boolean {
+	hasExternalAssetHandler(type: TLExternalAsset['type']): boolean {
 		return !!this.externalAssetContentHandlers[type]
 	}
 
 	/** @internal */
 	externalContentHandlers: {
 		[K in TLExternalContent<any>['type']]: {
-			[Key in K]: null | ((info: TLExternalContent<any> & { type: Key }) => void)
+			[Key in K]: null | ((info: Extract<TLExternalContent<any>, { type: Key }>) => void)
 		}[K]
 	} = {
 		text: null,
@@ -8059,6 +8094,8 @@ export class Editor extends EventEmitter<TLEventMap> {
 		embed: null,
 		'svg-text': null,
 		url: null,
+		tldraw: null,
+		excalidraw: null,
 	}
 
 	/**
@@ -8086,7 +8123,7 @@ export class Editor extends EventEmitter<TLEventMap> {
 			| null
 			| ((
 					info: T extends TLExternalContent<E>['type']
-						? TLExternalContent<E> & { type: T }
+						? Extract<TLExternalContent<E>, { type: T }>
 						: TLExternalContent<E>
 			  ) => void)
 	): this {
@@ -8564,11 +8601,13 @@ export class Editor extends EventEmitter<TLEventMap> {
 	 *
 	 * @public
 	 */
-	async getSvgElement(shapes: TLShapeId[] | TLShape[], opts: TLImageExportOptions = {}) {
+	async getSvgElement(shapes: TLShapeId[] | TLShape[], opts: TLSvgExportOptions = {}) {
 		const ids =
-			typeof shapes[0] === 'string'
-				? (shapes as TLShapeId[])
-				: (shapes as TLShape[]).map((s) => s.id)
+			shapes.length === 0
+				? this.getCurrentPageShapeIdsSorted()
+				: typeof shapes[0] === 'string'
+					? (shapes as TLShapeId[])
+					: (shapes as TLShape[]).map((s) => s.id)
 
 		if (ids.length === 0) return undefined
 
@@ -8585,7 +8624,7 @@ export class Editor extends EventEmitter<TLEventMap> {
 	 *
 	 * @public
 	 */
-	async getSvgString(shapes: TLShapeId[] | TLShape[], opts: TLImageExportOptions = {}) {
+	async getSvgString(shapes: TLShapeId[] | TLShape[], opts: TLSvgExportOptions = {}) {
 		const result = await this.getSvgElement(shapes, opts)
 		if (!result) return undefined
 
@@ -8598,10 +8637,61 @@ export class Editor extends EventEmitter<TLEventMap> {
 	}
 
 	/** @deprecated Use {@link Editor.getSvgString} or {@link Editor.getSvgElement} instead. */
-	async getSvg(shapes: TLShapeId[] | TLShape[], opts: TLImageExportOptions = {}) {
+	async getSvg(shapes: TLShapeId[] | TLShape[], opts: TLSvgExportOptions = {}) {
 		const result = await this.getSvgElement(shapes, opts)
 		if (!result) return undefined
 		return result.svg
+	}
+
+	/**
+	 * Get an exported image of the given shapes.
+	 *
+	 * @param shapes - The shapes (or shape ids) to export.
+	 * @param opts - Options for the export.
+	 *
+	 * @returns A blob of the image.
+	 * @public
+	 */
+	async toImage(shapes: TLShapeId[] | TLShape[], opts: TLImageExportOptions = {}) {
+		const withDefaults = {
+			format: 'png',
+			scale: 1,
+			pixelRatio: opts.format === 'svg' ? undefined : 2,
+			...opts,
+		} satisfies TLImageExportOptions
+		const result = await this.getSvgString(shapes, withDefaults)
+		if (!result) throw new Error('Could not create SVG')
+
+		switch (withDefaults.format) {
+			case 'svg':
+				return {
+					blob: new Blob([result.svg], { type: 'text/plain' }),
+					width: result.width,
+					height: result.height,
+				}
+			case 'jpeg':
+			case 'png':
+			case 'webp': {
+				const blob = await getSvgAsImage(result.svg, {
+					type: withDefaults.format,
+					quality: withDefaults.quality,
+					pixelRatio: withDefaults.pixelRatio,
+					width: result.width,
+					height: result.height,
+				})
+				if (!blob) {
+					throw new Error('Could not construct image.')
+				}
+				return {
+					blob,
+					width: result.width,
+					height: result.height,
+				}
+			}
+			default: {
+				exhaustiveSwitchError(withDefaults.format)
+			}
+		}
 	}
 
 	/* --------------------- Events --------------------- */
@@ -8713,8 +8803,8 @@ export class Editor extends EventEmitter<TLEventMap> {
 							// If our pointer moved only because we're following some other user, then don't
 							// update our last activity timestamp; otherwise, update it to the current timestamp.
 							info.type === 'pointer' && info.pointerId === INTERNAL_POINTER_IDS.CAMERA_MOVE
-								? this.store.unsafeGetWithoutCapture(TLPOINTER_ID)?.lastActivityTimestamp ??
-									this._tickManager.now
+								? (this.store.unsafeGetWithoutCapture(TLPOINTER_ID)?.lastActivityTimestamp ??
+									this._tickManager.now)
 								: this._tickManager.now,
 						meta: {},
 					},
@@ -9278,6 +9368,8 @@ export class Editor extends EventEmitter<TLEventMap> {
 		// prevent us from spamming similar event errors if we're crashed.
 		// todo: replace with new readonly mode?
 		if (this.getCrashingError()) return this
+
+		this.emit('before-event', info)
 
 		const { inputs } = this
 		const { type } = info

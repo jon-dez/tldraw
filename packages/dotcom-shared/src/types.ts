@@ -1,5 +1,5 @@
 import { stringEnum } from '@tldraw/utils'
-import { SerializedSchema, SerializedStore, TLRecord } from 'tldraw'
+import type { SerializedSchema, SerializedStore, TLRecord } from 'tldraw'
 import {
 	TlaFile,
 	TlaFilePartial,
@@ -139,8 +139,6 @@ export interface ZClientSentMessage {
 	updates: ZRowUpdate[]
 }
 
-export type TlaFileOpenMode = 'create' | 'duplicate' | null | undefined
-
 export const UserPreferencesKeys = [
 	'locale',
 	'animationSpeed',
@@ -153,3 +151,10 @@ export const UserPreferencesKeys = [
 	'name',
 	'color',
 ] as const satisfies Array<keyof TlaUser>
+
+export interface SubmitFeedbackRequestBody {
+	description: string
+	allowContact: boolean
+}
+
+export const MAX_PROBLEM_DESCRIPTION_LENGTH = 2000

@@ -185,22 +185,6 @@ export function ActionsProvider({ overrides, children }: ActionsProviderProps) {
 				},
 			},
 			{
-				id: 'export-as-json',
-				label: {
-					default: 'action.export-as-json',
-					menu: 'action.export-as-json.short',
-					['context-menu']: 'action.export-as-json.short',
-				},
-				readonlyOk: true,
-				onSelect(source) {
-					let ids = editor.getSelectedShapeIds()
-					if (ids.length === 0) ids = Array.from(editor.getCurrentPageShapeIds().values())
-					if (ids.length === 0) return
-					trackEvent('export-as', { format: 'json', source })
-					helpers.exportAs(ids, 'json', getExportName(editor, defaultDocumentName))
-				},
-			},
-			{
 				id: 'export-all-as-svg',
 				label: {
 					default: 'action.export-all-as-svg',
@@ -236,21 +220,6 @@ export function ActionsProvider({ overrides, children }: ActionsProviderProps) {
 				},
 			},
 			{
-				id: 'export-all-as-json',
-				label: {
-					default: 'action.export-all-as-json',
-					menu: 'action.export-all-as-json.short',
-					['context-menu']: 'action.export-all-as-json.short',
-				},
-				readonlyOk: true,
-				onSelect(source) {
-					const ids = Array.from(editor.getCurrentPageShapeIds().values())
-					if (ids.length === 0) return
-					trackEvent('export-all-as', { format: 'json', source })
-					helpers.exportAs(ids, 'json', getExportName(editor, defaultDocumentName))
-				},
-			},
-			{
 				id: 'copy-as-svg',
 				label: {
 					default: 'action.copy-as-svg',
@@ -281,22 +250,6 @@ export function ActionsProvider({ overrides, children }: ActionsProviderProps) {
 					if (ids.length === 0) return
 					trackEvent('copy-as', { format: 'png', source })
 					helpers.copyAs(ids, 'png')
-				},
-			},
-			{
-				id: 'copy-as-json',
-				label: {
-					default: 'action.copy-as-json',
-					menu: 'action.copy-as-json.short',
-					['context-menu']: 'action.copy-as-json.short',
-				},
-				readonlyOk: true,
-				onSelect(source) {
-					let ids = editor.getSelectedShapeIds()
-					if (ids.length === 0) ids = Array.from(editor.getCurrentPageShapeIds().values())
-					if (ids.length === 0) return
-					trackEvent('copy-as', { format: 'json', source })
-					helpers.copyAs(ids, 'json')
 				},
 			},
 			{
@@ -1410,6 +1363,15 @@ export function ActionsProvider({ overrides, children }: ActionsProviderProps) {
 					}
 				},
 			},
+			{
+				id: 'select-geo-tool',
+				kbd: 'g',
+				onSelect: async (source) => {
+					// will select whatever the most recent geo tool was
+					trackEvent('select-tool', { source, id: `geo-previous` })
+					editor.setCurrentTool('geo')
+				},
+			},
 		]
 
 		if (showCollaborationUi) {
@@ -1467,7 +1429,7 @@ export function unwrapLabel(label?: TLUiActionItem['label'], menuType?: string) 
 		? typeof label === 'string'
 			? label
 			: menuType
-				? label[menuType] ?? label['default']
+				? (label[menuType] ?? label['default'])
 				: undefined
 		: undefined
 }

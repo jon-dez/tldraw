@@ -6,10 +6,11 @@ import {
 	ROOM_OPEN_MODE,
 	ROOM_PREFIX,
 } from '@tldraw/dotcom-shared'
-import { createRouter, handleApiRequest, notFound } from '@tldraw/worker-shared'
+import { createRouter, handleApiRequest, handleUserAssetGet, notFound } from '@tldraw/worker-shared'
 import { DurableObject, WorkerEntrypoint } from 'cloudflare:workers'
 import { cors } from 'itty-router'
 // import { APP_ID } from './TLAppDurableObject'
+import { POSTHOG_URL } from './config'
 import { createRoom } from './routes/createRoom'
 import { createRoomSnapshot } from './routes/createRoomSnapshot'
 import { extractBookmarkMetadata } from './routes/extractBookmarkMetadata'
@@ -18,18 +19,21 @@ import { getRoomHistory } from './routes/getRoomHistory'
 import { getRoomHistorySnapshot } from './routes/getRoomHistorySnapshot'
 import { getRoomSnapshot } from './routes/getRoomSnapshot'
 import { joinExistingRoom } from './routes/joinExistingRoom'
+import { submitFeedback } from './routes/submitFeedback'
 import { createFiles } from './routes/tla/createFiles'
-import { deleteFile } from './routes/tla/deleteFile'
 import { forwardRoomRequest } from './routes/tla/forwardRoomRequest'
 import { getPublishedFile } from './routes/tla/getPublishedFile'
+import { upload } from './routes/tla/uploads'
 import { testRoutes } from './testRoutes'
-import { Environment } from './types'
-import { getUserDurableObject } from './utils/durableObjects'
-import { getAuth } from './utils/tla/getAuth'
+import { Environment, isDebugLogging } from './types'
+import { getLogger, getUserDurableObject } from './utils/durableObjects'
+import { getAuthFromSearchParams } from './utils/tla/getAuth'
 // export { TLAppDurableObject } from './TLAppDurableObject'
 export { TLDrawDurableObject } from './TLDrawDurableObject'
+export { TLLoggerDurableObject } from './TLLoggerDurableObject'
 export { TLPostgresReplicator } from './TLPostgresReplicator'
 export { TLUserDurableObject } from './TLUserDurableObject'
+
 export class TLAppDurableObject extends DurableObject {}
 
 const { preflight, corsify } = cors({
@@ -59,20 +63,58 @@ const router = createRouter<Environment>()
 	.post(`/${ROOM_PREFIX}/:roomId/restore`, forwardRoomRequest)
 	.get('/app/:userId/connect', async (req, env) => {
 		// forward req to the user durable object
-		const auth = await getAuth(req, env)
+		const auth = await getAuthFromSearchParams(req, env)
 		if (!auth) {
 			// eslint-disable-next-line no-console
 			console.log('auth not found')
 			return notFound()
 		}
+
+		if (req.headers.get('upgrade')?.toLowerCase() !== 'websocket') {
+			return notFound()
+		}
+
 		const stub = getUserDurableObject(env, auth.userId)
 		return stub.fetch(req)
 	})
 	.post('/app/tldr', createFiles)
-	.get('/app/file/:roomId', forwardRoomRequest)
+	.get('/app/file/:roomId', (req, env) => {
+		if (req.headers.get('upgrade')?.toLowerCase() === 'websocket') {
+			return forwardRoomRequest(req, env)
+		}
+		return notFound()
+	})
 	.get('/app/publish/:roomId', getPublishedFile)
-	.delete('/app/file/:roomId', deleteFile)
+	.get('/app/uploads/:objectName', async (request, env, ctx) => {
+		return handleUserAssetGet({
+			request,
+			bucket: env.UPLOADS,
+			objectName: request.params.objectName,
+			context: ctx,
+		})
+	})
+	.post('/app/uploads/:objectName', upload)
 	.all('/app/__test__/*', testRoutes.fetch)
+	.all('/ph/*', (req) => {
+		const url = new URL(req.url)
+		const proxied = new Request(
+			`${POSTHOG_URL}${url.pathname.replace(/^\/ph\//, '/')}${url.search}`,
+			req
+		)
+		proxied.headers.delete('cookie')
+		return fetch(proxied)
+	})
+	.get('/app/__debug-tail', (req, env) => {
+		if (isDebugLogging(env)) {
+			// upgrade to websocket
+			if (req.headers.get('upgrade')?.toLowerCase() === 'websocket') {
+				return getLogger(env).fetch(req)
+			}
+		}
+
+		return new Response('Not Found', { status: 404 })
+	})
+	.post('/app/submit-feedback', submitFeedback)
 	// end app
 	.all('*', notFound)
 

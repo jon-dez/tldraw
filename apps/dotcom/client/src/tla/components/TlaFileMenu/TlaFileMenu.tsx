@@ -1,6 +1,6 @@
 /* ---------------------- Menu ---------------------- */
 
-import { TlaFile } from '@tldraw/dotcom-shared'
+import { FILE_PREFIX, TlaFile } from '@tldraw/dotcom-shared'
 import { Fragment, ReactNode, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -22,6 +22,7 @@ import { TldrawApp } from '../../app/TldrawApp'
 import { useApp } from '../../hooks/useAppState'
 import { useIsFileOwner } from '../../hooks/useIsFileOwner'
 import { useIsFilePinned } from '../../hooks/useIsFilePinned'
+import { useFileSidebarFocusContext } from '../../providers/FileInputFocusProvider'
 import { TLAppUiEventSource, useTldrawAppUiEvents } from '../../utils/app-ui-events'
 import { copyTextToClipboard } from '../../utils/copy'
 import { defineMessages, useMsg } from '../../utils/i18n'
@@ -109,15 +110,29 @@ function FileItems({
 		app.pinOrUnpinFile(fileId)
 	}, [app, fileId])
 
+	const focusCtx = useFileSidebarFocusContext()
+
 	const handleDuplicateClick = useCallback(async () => {
 		const newFileId = uniqueId()
 		const file = app.getFile(fileId)
 		if (!file) return
-		app.createFile({ id: newFileId, name: getDuplicateName(file, app) })
-		navigate(routes.tlaFile(newFileId), {
-			state: { mode: 'duplicate', duplicateId: fileId },
+		trackEvent('duplicate-file', { source: 'file-menu' })
+		const res = app.createFile({
+			id: newFileId,
+			name: getDuplicateName(file, app),
+			createSource: `${FILE_PREFIX}/${fileId}`,
 		})
-	}, [app, fileId, navigate])
+		// copy the state too
+		const prevState = app.getFileState(fileId)
+		app.getOrCreateFileState(newFileId)
+		app.updateFileState(newFileId, {
+			lastSessionState: prevState?.lastSessionState,
+		})
+		if (res.ok) {
+			focusCtx.shouldRenameNextNewFile = true
+			navigate(routes.tlaFile(newFileId))
+		}
+	}, [app, fileId, focusCtx, navigate, trackEvent])
 
 	const handleDeleteClick = useCallback(() => {
 		addDialog({
