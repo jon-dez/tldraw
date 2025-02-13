@@ -97,7 +97,7 @@ export function OverflowingToolbar({ children }: OverflowingToolbarProps) {
 		rButtons.current = Array.from(mainToolsRef.current?.children ?? []).filter(
 			(el): el is HTMLElement => {
 				// only count html elements...
-				if (!(el instanceof HTMLElement)) return false
+				if (!el.instanceOf(HTMLElement)) return false
 
 				// ...that are buttons...
 				if (el.tagName.toLowerCase() !== 'button') return false
@@ -141,9 +141,9 @@ export function OverflowingToolbar({ children }: OverflowingToolbarProps) {
 			}
 		}
 
-		document.addEventListener('keydown', handleKeyDown)
+		editor.getContainer().ownerDocument.addEventListener('keydown', handleKeyDown)
 		return () => {
-			document.removeEventListener('keydown', handleKeyDown)
+			editor.getContainer().ownerDocument.removeEventListener('keydown', handleKeyDown)
 		}
 	}, [editor])
 
