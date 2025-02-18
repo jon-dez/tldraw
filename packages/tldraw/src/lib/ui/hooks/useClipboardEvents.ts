@@ -9,7 +9,6 @@ import {
 	preventDefault,
 	stopEventPropagation,
 	uniq,
-	useContainer,
 	useEditor,
 	useValue,
 } from '@tldraw/editor'
@@ -82,7 +81,7 @@ const INPUTS = ['input', 'select', 'textarea']
  * @internal
  */
 function areShortcutsDisabled(editor: Editor) {
-	const { activeElement } = document
+	const { activeElement } = editor.getContainer().ownerDocument
 
 	return (
 		editor.menus.hasAnyOpenMenus() ||
@@ -616,7 +615,10 @@ export function useMenuClipboardEvents() {
 			// input instead; e.g. when pasting text into a text shape's content
 			if (editor.getEditingShapeId() !== null) return
 
-			if (Array.isArray(data) && data[0] instanceof ClipboardItem) {
+			if (
+				Array.isArray(data) &&
+				data[0] instanceof editor.getContainer().win.window.ClipboardItem
+			) {
 				handlePasteFromClipboardApi({ editor, clipboardItems: data, point })
 				trackEvent('paste', { source: 'menu' })
 			} else {
@@ -638,7 +640,6 @@ export function useMenuClipboardEvents() {
 
 /** @public */
 export function useNativeClipboardEvents() {
-	const container = useContainer()
 	const editor = useEditor()
 	const trackEvent = useUiEvents()
 
@@ -687,6 +688,7 @@ export function useNativeClipboardEvents() {
 			}
 		}
 
+		const container = editor.getContainer()
 		const paste = (e: ClipboardEvent) => {
 			if (disablingMiddleClickPaste) {
 				stopEventPropagation(e)
@@ -716,7 +718,6 @@ export function useNativeClipboardEvents() {
 					handlePasteFromEventClipboardData(editor, e.clipboardData, point)
 				}
 			}
-
 			// if we can read from the clipboard API, we want to try using that first. that allows
 			// us to access most things, and doesn't strip out metadata added to tldraw's own
 			// copy-as-png features - so copied shapes come back in at the correct size.
@@ -727,7 +728,10 @@ export function useNativeClipboardEvents() {
 				const fallbackFiles = Array.from(e.clipboardData?.files || [])
 				navigator.clipboard.read().then(
 					(clipboardItems) => {
-						if (Array.isArray(clipboardItems) && clipboardItems[0] instanceof ClipboardItem) {
+						if (
+							Array.isArray(clipboardItems) &&
+							clipboardItems[0] instanceof container.win.window.ClipboardItem
+						) {
 							handlePasteFromClipboardApi({ editor, clipboardItems, point, fallbackFiles })
 						}
 					},
@@ -755,5 +759,5 @@ export function useNativeClipboardEvents() {
 			container.ownerDocument.removeEventListener('paste', paste)
 			container.ownerDocument.removeEventListener('pointerup', pointerUpHandler)
 		}
-	}, [editor, trackEvent, appIsFocused, container])
+	}, [editor, trackEvent, appIsFocused])
 }
