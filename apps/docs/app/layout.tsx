@@ -1,3 +1,4 @@
+import { TalkToMe } from '@/components/common/talk-to-me'
 import { Footer } from '@/components/navigation/footer'
 import { Header } from '@/components/navigation/header'
 import { cn } from '@/utils/cn'
@@ -13,11 +14,11 @@ import './globals.css'
 export const metadata: Metadata = {
 	metadataBase: new URL('https://tldraw.dev'),
 	title: {
-		default: 'The infinite canvas SDK • tldraw',
+		default: 'tldraw: Build whiteboards in React with the tldraw SDK',
 		template: `%s • tldraw`,
 	},
 	description:
-		'Infinite canvas SDK from tldraw. Build whiteboards, design tools, and canvas experiences for the web.',
+		'The tldraw SDK provides tools, services, and APIs to build beautiful whiteboards and infinite canvas applications with real-time collaboration and a powerful React-based canvas.',
 	twitter: {
 		creator: '@tldraw',
 	},
@@ -59,10 +60,11 @@ export default async function Layout({ children }: { children: React.ReactNode }
 			lang="en"
 			className={cn(GeistSans.variable, ShantellSans.variable, 'font-sans antialiased')}
 		>
-			<body className="pt-14 md:pt-[4.5rem] overflow-x-hidden bg-white text-zinc-600 dark:bg-zinc-950 dark:text-zinc-400">
+			<body className="overflow-x-hidden bg-white text-zinc-600 dark:bg-zinc-950 dark:text-zinc-400">
 				<ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
 					<Header />
 					{children}
+					<TalkToMe />
 					<Footer />
 					<Analytics />
 				</ThemeProvider>
