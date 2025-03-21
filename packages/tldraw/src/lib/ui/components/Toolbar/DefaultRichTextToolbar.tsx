@@ -234,7 +234,7 @@ function rectToBox(rect: DOMRect): Box {
 // Extracted here
 function getToolbarScreenPosition(editor: Editor, toolbarElm: HTMLElement) {
 	// Get the text selection rects as a box. This will be undefined if there are no selections.
-	const selection = window.getSelection()
+	const selection = editor.getContainer().ownerDocument.getSelection()
 
 	// If there are no selections, don't return a box
 	if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return
@@ -526,6 +526,7 @@ function useIsMousingDownOnTextEditor(textEditor: TiptapEditor) {
 		touchDownEvents.forEach((eventName: string) => {
 			textEditor.view.dom.addEventListener(eventName, handlePointingDown)
 		})
+		const document = textEditor.view.dom.ownerDocument;
 		touchUpEvents.forEach((eventName: string) => {
 			document.body.addEventListener(eventName, handlePointingUp)
 		})
