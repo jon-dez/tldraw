@@ -8,6 +8,7 @@ import {
 	TLPageId,
 	TLStoreSnapshot,
 	TLTextOptions,
+	mergeArraysAndReplaceDefaults,
 	useShallowArrayIdentity,
 	useTLStore,
 } from '@tldraw/editor'
@@ -97,12 +98,15 @@ export const TldrawImage = memo(function TldrawImage(props: TldrawImageProps) {
 	const [url, setUrl] = useState<string | null>(null)
 	const [container, setContainer] = useState<HTMLDivElement | null>(null)
 
-	const shapeUtils = useShallowArrayIdentity(props.shapeUtils ?? [])
-	const shapeUtilsWithDefaults = useMemo(() => [...defaultShapeUtils, ...shapeUtils], [shapeUtils])
-	const bindingUtils = useShallowArrayIdentity(props.bindingUtils ?? [])
+	const _shapeUtils = useShallowArrayIdentity(props.shapeUtils ?? [])
+	const shapeUtilsWithDefaults = useMemo(
+		() => mergeArraysAndReplaceDefaults('type', _shapeUtils, defaultShapeUtils),
+		[_shapeUtils]
+	)
+	const _bindingUtils = useShallowArrayIdentity(props.bindingUtils ?? [])
 	const bindingUtilsWithDefaults = useMemo(
-		() => [...defaultBindingUtils, ...bindingUtils],
-		[bindingUtils]
+		() => mergeArraysAndReplaceDefaults('type', _bindingUtils, defaultBindingUtils),
+		[_bindingUtils]
 	)
 	const store = useTLStore({
 		assets: props.assets,

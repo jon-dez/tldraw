@@ -94,7 +94,7 @@ export class FontManager {
 				const shapeUtil = this.editor.getShapeUtil(shape)
 				return shapeUtil.getFontFaces(shape)
 			},
-			{ areResultsEqual: areArraysShallowEqual }
+			{ areResultsEqual: areArraysShallowEqual, areRecordsEqual: (a, b) => a.props === b.props }
 		)
 
 		this.shapeFontLoadStateCache = editor.store.createCache<(FontState | null)[], TLShape>(
@@ -157,7 +157,7 @@ export class FontManager {
 			loadingPromise: instance
 				.load()
 				.then(() => {
-					const document = this.editor.getContainer().ownerDocument;
+					const document = this.editor.getContainer().ownerDocument
 					document.fonts.add(instance)
 					this.fontStates.update(font, (s) => ({ ...s, state: 'ready' }))
 				})
@@ -191,7 +191,7 @@ export class FontManager {
 	}
 
 	private findOrCreateFontFace(font: TLFontFace) {
-		const document = this.editor.getContainer().ownerDocument;
+		const document = this.editor.getContainer().ownerDocument
 		for (const existing of document.fonts) {
 			if (
 				existing.family === font.family &&
