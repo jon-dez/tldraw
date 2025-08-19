@@ -1,4 +1,3 @@
-import va from '@vercel/analytics'
 import posthog, { PostHogConfig, Properties } from 'posthog-js'
 import 'posthog-js/dist/web-vitals'
 import { useEffect } from 'react'
@@ -33,6 +32,23 @@ const shouldUsePosthog = POSTHOG_KEY !== undefined
 const GA4_MEASUREMENT_ID: string | undefined = import.meta.env.VITE_GA4_MEASUREMENT_ID
 const shouldUseGA4 = GA4_MEASUREMENT_ID !== undefined
 
+const PROPERTIES_TO_REDACT = ['url', 'href', 'pathname']
+
+// Match property names against the defined list
+function filterProperties(value: { [key: string]: any }) {
+	return Object.entries(value).reduce<{ [key: string]: any }>((acc, [key, value]) => {
+		// N.B. This isn't super obvious but Posthog has keys that can be like
+		// `$pathname` for native events, but also you could have `pathname` for custom events.
+		// So we check for both here.
+		if (PROPERTIES_TO_REDACT.some((prop) => key.includes(prop))) {
+			acc[key] = 'redacted'
+		} else {
+			acc[key] = value
+		}
+		return acc
+	}, {})
+}
+
 let currentOptionsPosthog: AnalyticsOptions | null = null
 let eventBufferPosthog: null | Array<{ name: string; data: Properties | null | undefined }> = []
 function configurePosthog(options: AnalyticsOptions) {
@@ -42,13 +58,25 @@ function configurePosthog(options: AnalyticsOptions) {
 	const sessionID = hashParams.get('session_id')
 	const distinctID = hashParams.get('distinct_id')
 	const config: Partial<PostHogConfig> = {
-		api_host: 'https://analytics.tldraw.com/ingest',
+		api_host: 'https://analytics.tldraw.com/i',
 		ui_host: 'https://eu.i.posthog.com',
 		capture_pageview: false,
 		persistence: options.optedIn ? 'localStorage+cookie' : 'memory',
 		before_send: (payload) => {
 			if (!payload) return null
 			payload.properties.is_signed_in = !!options.user
+
+			const redactedProperties = filterProperties(payload.properties || {})
+			payload.properties = redactedProperties
+
+			// $set
+			const redactedSet = filterProperties(payload.$set || {})
+			payload.$set = redactedSet
+
+			// $set_once
+			const redactedSetOnce = filterProperties(payload.$set_once || {})
+			payload.$set_once = redactedSetOnce
+
 			return payload
 		},
 		bootstrap:
@@ -84,14 +112,37 @@ function configureGA4(options: AnalyticsOptions) {
 	if (!shouldUseGA4) return
 
 	if (!currentOptionsGA4) {
+		ReactGA.gtag('consent', 'default', {
+			ad_storage: 'denied',
+			ad_user_data: 'denied',
+			ad_personalization: 'denied',
+			analytics_storage: 'denied',
+			// Wait for our cookie to load.
+			wait_for_update: 500,
+		})
+
 		ReactGA.initialize(GA4_MEASUREMENT_ID)
 		ReactGA.send('pageview')
 	}
 
 	if (options.optedIn) {
-		ReactGA.set({ userId: options.user.id })
+		ReactGA.set({ userId: options.user.id, anonymize_ip: false })
+		ReactGA.gtag('consent', 'update', {
+			ad_user_data: 'granted',
+			ad_personalization: 'granted',
+			ad_storage: 'granted',
+			analytics_storage: 'granted',
+		})
 	} else if (currentOptionsGA4?.optedIn) {
+		ReactGA.set({ anonymize_ip: true })
 		ReactGA.reset()
+
+		ReactGA.gtag('consent', 'update', {
+			ad_user_data: 'denied',
+			ad_personalization: 'denied',
+			ad_storage: 'denied',
+			analytics_storage: 'denied',
+		})
 	}
 
 	currentOptionsGA4 = options
@@ -126,7 +177,6 @@ function getGA4() {
 }
 
 export function trackEvent(name: string, data?: { [key: string]: any }) {
-	va.track(name, data)
 	getPosthog()?.capture(name, data)
 	getGA4()?.event(name, data)
 }
@@ -139,11 +189,44 @@ export function SignedOutAnalytics() {
 	useEffect(() => {
 		configurePosthog({ optedIn: false })
 		configureGA4({ optedIn: false })
+		document.getElementById('reo-iframe-loader')?.remove()
 	}, [])
 
 	useTrackPageViews()
 
 	return null
+}
+
+function setupReo(options: AnalyticsOptions) {
+	if (options.optedIn === false) return
+
+	const user = options.user
+
+	function postToReoIframe(type: 'identify', payload?: any) {
+		const iframe = document.getElementById('reo-iframe-loader') as HTMLIFrameElement | null
+		if (iframe?.contentWindow) {
+			iframe.contentWindow.postMessage({ type, payload })
+		}
+	}
+
+	const reoIdentify = () =>
+		postToReoIframe('identify', {
+			firstname: user.name,
+			username: user.email,
+			type: 'email',
+			userId: user.id,
+		})
+
+	if (!document.getElementById('reo-iframe-loader')) {
+		const iframeTag = document.createElement('iframe')
+		iframeTag.id = 'reo-iframe-loader'
+		iframeTag.style.display = 'none'
+		iframeTag.src = '/reo.html'
+		iframeTag.onload = () => reoIdentify()
+		document.body.appendChild(iframeTag)
+	} else {
+		reoIdentify()
+	}
 }
 
 export function SignedInAnalytics() {
@@ -156,6 +239,10 @@ export function SignedInAnalytics() {
 			user: { id: user.id, name: user.name, email: user.email },
 		})
 		configureGA4({
+			optedIn: user.allowAnalyticsCookie === true,
+			user: { id: user.id, name: user.name, email: user.email },
+		})
+		setupReo({
 			optedIn: user.allowAnalyticsCookie === true,
 			user: { id: user.id, name: user.name, email: user.email },
 		})

@@ -1,4 +1,9 @@
-import { ROOM_OPEN_MODE, RoomOpenMode, RoomOpenModeToPath } from '@tldraw/dotcom-shared'
+import {
+	getLicenseKey,
+	ROOM_OPEN_MODE,
+	RoomOpenMode,
+	RoomOpenModeToPath,
+} from '@tldraw/dotcom-shared'
 import { useSync } from '@tldraw/sync'
 import { useCallback, useMemo } from 'react'
 import { Editor, TLComponents, Tldraw } from 'tldraw'
@@ -13,15 +18,16 @@ import { globalEditor } from '../../../utils/globalEditor'
 import { multiplayerAssetStore } from '../../../utils/multiplayerAssetStore'
 import { useMaybeApp } from '../../hooks/useAppState'
 import { ReadyWrapper, useSetIsReady } from '../../hooks/useIsReady'
-import { SneakyDarkModeSync } from './SneakyDarkModeSync'
-import { TlaEditorWrapper } from './TlaEditorWrapper'
 import { TlaEditorErrorFallback } from './editor-components/TlaEditorErrorFallback'
 import { TlaEditorLegacySharePanel } from './editor-components/TlaEditorLegacySharePanel'
 import { TlaEditorMenuPanel } from './editor-components/TlaEditorMenuPanel'
 import { TlaEditorTopPanel } from './editor-components/TlaEditorTopPanel'
+import { SneakyDarkModeSync } from './sneaky/SneakyDarkModeSync'
 import { SneakyTldrawFileDropHandler } from './sneaky/SneakyFileDropHandler'
+import { SneakyLegacyModal } from './sneaky/SneakyLegacyModal'
 import { SneakyLegacySetDocumentTitle } from './sneaky/SneakyLegacytSetDocumentTitle'
 import { SneakySetDocumentTitle } from './sneaky/SneakySetDocumentTitle'
+import { TlaEditorWrapper } from './TlaEditorWrapper'
 import { useFileEditorOverrides } from './useFileEditorOverrides'
 
 /** @internal */
@@ -30,6 +36,8 @@ export const components: TLComponents = {
 	MenuPanel: TlaEditorMenuPanel,
 	SharePanel: TlaEditorLegacySharePanel,
 	TopPanel: TlaEditorTopPanel,
+	Dialogs: null,
+	Toasts: null,
 }
 
 export function TlaLegacyFileEditor({
@@ -57,7 +65,6 @@ function TlaEditorInner({
 	fileSlug: string
 }) {
 	const app = useMaybeApp()
-
 	const setIsReady = useSetIsReady()
 
 	// make sure this runs before the editor is instantiated
@@ -101,6 +108,7 @@ function TlaEditorInner({
 		<TlaEditorWrapper>
 			<Tldraw
 				className="tla-editor"
+				licenseKey={getLicenseKey()}
 				store={storeWithStatus}
 				assetUrls={assetUrls}
 				onMount={handleMount}
@@ -114,6 +122,7 @@ function TlaEditorInner({
 				<ThemeUpdater />
 				<SneakyDarkModeSync />
 				<SneakyLegacySetDocumentTitle />
+				{roomOpenMode === 'read-write' && <SneakyLegacyModal />}
 				{app && <SneakyTldrawFileDropHandler />}
 			</Tldraw>
 		</TlaEditorWrapper>

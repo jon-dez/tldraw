@@ -17,7 +17,6 @@ import {
 	TLArrowBindingProps,
 	TLArrowShape,
 	TLArrowShapeProps,
-	TLFontFace,
 	TLHandle,
 	TLHandleDragInfo,
 	TLResizeInfo,
@@ -116,6 +115,9 @@ export class ArrowShapeUtil extends ShapeUtil<TLArrowShape> {
 
 		hoverPreciseTimeout: 600,
 		pointingPreciseTimeout: 320,
+
+		shouldBeExact: (editor: Editor) => editor.inputs.altKey,
+		shouldIgnoreTargets: (editor: Editor) => editor.inputs.ctrlKey,
 	}
 
 	override canEdit() {
@@ -127,10 +129,6 @@ export class ArrowShapeUtil extends ShapeUtil<TLArrowShape> {
 	}
 	override canSnap() {
 		return false
-	}
-	override canTabTo(shape: TLArrowShape) {
-		const bindings = getArrowBindings(this.editor, shape)
-		return !!(bindings.start || bindings.end || shape.props.text)
 	}
 	override hideResizeHandles() {
 		return true
@@ -157,7 +155,7 @@ export class ArrowShapeUtil extends ShapeUtil<TLArrowShape> {
 		return true
 	}
 
-	override getFontFaces(shape: TLArrowShape): TLFontFace[] {
+	override getFontFaces(shape: TLArrowShape) {
 		if (!shape.props.text) return EMPTY_ARRAY
 		return [DefaultFontFaces[`tldraw_${shape.props.font}`].normal.normal]
 	}
@@ -433,7 +431,6 @@ export class ArrowShapeUtil extends ShapeUtil<TLArrowShape> {
 			pointInPageSpace: this.editor.getShapePageTransform(shape.id)!.applyToPoint(handle),
 			arrow: shape,
 			isPrecise: isPrecise,
-			isExact: this.editor.inputs.altKey,
 			currentBinding,
 			oppositeBinding,
 		})
@@ -454,7 +451,7 @@ export class ArrowShapeUtil extends ShapeUtil<TLArrowShape> {
 			terminal: handleId,
 			normalizedAnchor: targetInfo.normalizedAnchor,
 			isPrecise: targetInfo.isPrecise,
-			isExact: this.editor.inputs.altKey,
+			isExact: targetInfo.isExact,
 			snap: targetInfo.snap,
 		}
 
@@ -825,13 +822,15 @@ export class ArrowShapeUtil extends ShapeUtil<TLArrowShape> {
 			(ae && info.end.arrowhead !== 'arrow') ||
 			!!labelGeometry
 
+		const labelBounds = labelGeometry ? labelGeometry.getBounds() : new Box(0, 0, 0, 0)
+
 		if (isEditing && labelGeometry) {
 			return (
 				<rect
-					x={toDomPrecision(labelGeometry.x)}
-					y={toDomPrecision(labelGeometry.y)}
-					width={labelGeometry.w}
-					height={labelGeometry.h}
+					x={toDomPrecision(labelBounds.x)}
+					y={toDomPrecision(labelBounds.y)}
+					width={labelBounds.w}
+					height={labelBounds.h}
 					rx={3.5 * shape.props.scale}
 					ry={3.5 * shape.props.scale}
 				/>
@@ -850,7 +849,7 @@ export class ArrowShapeUtil extends ShapeUtil<TLArrowShape> {
 							radius={3.5 * shape.props.scale}
 							hasText={shape.props.text.trim().length > 0}
 							bounds={bounds}
-							labelBounds={labelGeometry ? labelGeometry.getBounds() : new Box(0, 0, 0, 0)}
+							labelBounds={labelBounds}
 							as={clipStartArrowhead && as ? as : ''}
 							ae={clipEndArrowhead && ae ? ae : ''}
 						/>
@@ -893,10 +892,10 @@ export class ArrowShapeUtil extends ShapeUtil<TLArrowShape> {
 				{ae && <path d={ae} />}
 				{labelGeometry && (
 					<rect
-						x={toDomPrecision(labelGeometry.x)}
-						y={toDomPrecision(labelGeometry.y)}
-						width={labelGeometry.w}
-						height={labelGeometry.h}
+						x={toDomPrecision(labelBounds.x)}
+						y={toDomPrecision(labelBounds.y)}
+						width={labelBounds.w}
+						height={labelBounds.h}
 						rx={3.5}
 						ry={3.5}
 					/>
@@ -956,6 +955,7 @@ export class ArrowShapeUtil extends ShapeUtil<TLArrowShape> {
 						.box.clone()
 						.expandBy(-ARROW_LABEL_PADDING * shape.props.scale)}
 					padding={0}
+					showTextOutline={true}
 				/>
 			</g>
 		)
@@ -1177,13 +1177,13 @@ function ArrowClipPath({
 			path
 				.moveTo(labelBounds.left, labelBounds.top + radius)
 				.lineTo(labelBounds.left, labelBounds.bottom - radius)
-				.arcTo(radius, false, false, labelBounds.left + radius, labelBounds.bottom)
+				.circularArcTo(radius, false, false, labelBounds.left + radius, labelBounds.bottom)
 				.lineTo(labelBounds.right - radius, labelBounds.bottom)
-				.arcTo(radius, false, false, labelBounds.right, labelBounds.bottom - radius)
+				.circularArcTo(radius, false, false, labelBounds.right, labelBounds.bottom - radius)
 				.lineTo(labelBounds.right, labelBounds.top + radius)
-				.arcTo(radius, false, false, labelBounds.right - radius, labelBounds.top)
+				.circularArcTo(radius, false, false, labelBounds.right - radius, labelBounds.top)
 				.lineTo(labelBounds.left + radius, labelBounds.top)
-				.arcTo(radius, false, false, labelBounds.left, labelBounds.top + radius)
+				.circularArcTo(radius, false, false, labelBounds.left, labelBounds.top + radius)
 				.close()
 		}
 

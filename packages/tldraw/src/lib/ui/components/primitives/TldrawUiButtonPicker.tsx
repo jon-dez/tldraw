@@ -123,6 +123,7 @@ export const TldrawUiButtonPicker = memo(function TldrawUiButtonPicker<T extends
 			data-testid={`style.${uiType}`}
 			type="single"
 			className={classNames('tlui-buttons__grid')}
+			value={value.type === 'shared' ? value.value : undefined}
 		>
 			{items.map((item) => {
 				const label = title + ' — ' + msg(`${uiType}-style.${item.value}` as TLUiTranslationKey)
@@ -134,6 +135,7 @@ export const TldrawUiButtonPicker = memo(function TldrawUiButtonPicker<T extends
 						data-testid={`style.${uiType}.${item.value}`}
 						aria-label={label}
 						value={item.value}
+						data-state={value.type === 'shared' && value.value === item.value ? 'on' : 'off'}
 						data-isactive={value.type === 'shared' && value.value === item.value}
 						title={label}
 						className={classNames('tlui-button-grid__button')}

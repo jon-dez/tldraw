@@ -1,10 +1,11 @@
 import { Editor, GeoShapeGeoStyle, useMaybeEditor } from '@tldraw/editor'
 import * as React from 'react'
 import { EmbedDialog } from '../components/EmbedDialog'
+import { TLUiIconJsx } from '../components/primitives/TldrawUiIcon'
 import { useA11y } from '../context/a11y'
 import { TLUiEventSource, useUiEvents } from '../context/events'
 import { TLUiIconType } from '../icon-types'
-import { useDefaultHelpers } from '../overrides'
+import { TLUiOverrideHelpers, useDefaultHelpers } from '../overrides'
 import { TLUiTranslationKey } from './useTranslation/TLUiTranslationKey'
 import { useTranslation } from './useTranslation/useTranslation'
 
@@ -16,7 +17,7 @@ export interface TLUiToolItem<
 	id: string
 	label: TranslationKey
 	shortcutsLabel?: TranslationKey
-	icon: IconType
+	icon: IconType | TLUiIconJsx
 	onSelect(source: TLUiEventSource): void
 	/**
 	 * The keyboard shortcut for this tool. This is a string that can be a single key,
@@ -43,7 +44,7 @@ export interface TLUiToolsProviderProps {
 	overrides?(
 		editor: Editor,
 		tools: TLUiToolsContextType,
-		helpers: { insertMedia(): void }
+		helpers: Partial<TLUiOverrideHelpers>
 	): TLUiToolsContextType
 	children: React.ReactNode
 }

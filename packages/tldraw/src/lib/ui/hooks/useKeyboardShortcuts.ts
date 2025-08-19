@@ -35,6 +35,7 @@ export function useKeyboardShortcuts() {
 		if (!isFocused) return
 
 		const disposables = new Array<() => void>()
+		const container = editor.getContainer()
 
 		const hot = (keys: string, callback: (event: KeyboardEvent) => void) => {
 			hotkeys(keys, { element: container.ownerDocument.body }, callback)
@@ -62,7 +63,7 @@ export function useKeyboardShortcuts() {
 			if (SKIP_KBDS.includes(action.id)) continue
 
 			hot(getHotkeysStringFromKbd(action.kbd), (event) => {
-				if (areShortcutsDisabled(editor)) return
+				if (areShortcutsDisabled(editor) && !action.isRequiredA11yAction) return
 				preventDefault(event)
 				action.onSelect('kbd')
 			})
@@ -150,7 +151,8 @@ export function areShortcutsDisabled(editor: Editor) {
 	return (
 		editor.menus.hasAnyOpenMenus() ||
 		editor.getEditingShapeId() !== null ||
-		editor.getCrashingError()
+		editor.getCrashingError() ||
+		!editor.user.getAreKeyboardShortcutsEnabled()
 	)
 }
 

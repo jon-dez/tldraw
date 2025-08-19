@@ -77,6 +77,7 @@ function SignedInSubmitFeedbackDialog({ onClose }: { onClose(): void }) {
 			body: JSON.stringify({
 				allowContact: true,
 				description: rInput.current.value.trim(),
+				url: window.location.href.replace('https', 'https-please-be-mindful'),
 			} satisfies SubmitFeedbackRequestBody),
 		})
 			.then((r) => {
@@ -110,7 +111,7 @@ function SignedInSubmitFeedbackDialog({ onClose }: { onClose(): void }) {
 	}, [])
 
 	return (
-		<div className={styles.feedbackDialog}>
+		<>
 			<TldrawUiDialogHeader>
 				<TldrawUiDialogTitle>
 					<F defaultMessage="Send feedback" />
@@ -148,7 +149,7 @@ function SignedInSubmitFeedbackDialog({ onClose }: { onClose(): void }) {
 				/>
 			</TldrawUiDialogBody>
 			<TldrawUiDialogFooter className="tlui-dialog__footer__actions">
-				<TldrawUiButton type="normal">
+				<TldrawUiButton type="normal" onClick={onClose}>
 					<TldrawUiButtonLabel>
 						<F defaultMessage="Cancel" />
 					</TldrawUiButtonLabel>
@@ -159,6 +160,6 @@ function SignedInSubmitFeedbackDialog({ onClose }: { onClose(): void }) {
 					</TldrawUiButtonLabel>
 				</TldrawUiButton>
 			</TldrawUiDialogFooter>
-		</div>
+		</>
 	)
 }

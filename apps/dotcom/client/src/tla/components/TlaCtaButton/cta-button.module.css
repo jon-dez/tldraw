@@ -16,6 +16,11 @@
 	cursor: pointer;
 }
 
+.ctaButton:focus-visible {
+	outline-offset: 2px;
+	border-radius: 6px;
+}
+
 .ctaButton > span {
 	position: relative;
 	color: #ffffff;
@@ -45,4 +50,10 @@
 	background-color: var(--color-background);
 	border-radius: 8px;
 	z-index: 1;
+}
+
+@media (hover: hover) {
+	.ctaButton:hover::before {
+		background-color: var(--tla-color-cta-hover);
+	}
 }

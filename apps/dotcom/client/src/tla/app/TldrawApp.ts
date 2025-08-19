@@ -21,6 +21,7 @@ import {
 	assert,
 	fetch,
 	getFromLocalStorage,
+	isEqual,
 	promiseWithResolve,
 	Result,
 	setInLocalStorage,
@@ -28,7 +29,6 @@ import {
 	throttle,
 	uniqueId,
 } from '@tldraw/utils'
-import isEqual from 'lodash.isequal'
 import pick from 'lodash.pick'
 import {
 	assertExists,
@@ -51,6 +51,7 @@ import {
 	TLUserPreferences,
 	transact,
 } from 'tldraw'
+import { trackEvent } from '../../utils/analytics'
 import { MULTIPLAYER_SERVER, ZERO_SERVER } from '../../utils/config'
 import { multiplayerAssetStore } from '../../utils/multiplayerAssetStore'
 import { getScratchPersistenceKey } from '../../utils/scratch-persistence-key'
@@ -374,6 +375,7 @@ export class TldrawApp {
 	}
 
 	private showMaxFilesToast() {
+		trackEvent('max-files-reached')
 		this.toasts?.addToast({
 			title: this.getIntl().formatMessage(this.messages.max_files_title),
 			description: this.getIntl().formatMessage(this.messages.max_files_reached),
@@ -700,6 +702,7 @@ export class TldrawApp {
 			...restOfPreferences,
 			locale: restOfPreferences.locale ?? null,
 			animationSpeed: restOfPreferences.animationSpeed ?? null,
+			areKeyboardShortcutsEnabled: restOfPreferences.areKeyboardShortcutsEnabled ?? null,
 			edgeScrollSpeed: restOfPreferences.edgeScrollSpeed ?? null,
 			colorScheme: restOfPreferences.colorScheme ?? null,
 			isSnapMode: restOfPreferences.isSnapMode ?? null,
@@ -753,7 +756,7 @@ export class TldrawApp {
 				severity: 'info',
 				title: this.getIntl().formatMessage(this.messages.uploadingTldrFiles, {
 					total: totalFiles,
-					uploaded: uploadedFiles,
+					uploaded: uploadedFiles + 1,
 				}),
 
 				description: `${getApproxPercentage()}%`,

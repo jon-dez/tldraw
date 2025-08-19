@@ -1,10 +1,11 @@
 import { Slider as _Slider } from 'radix-ui'
-import { memo, useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { TLUiTranslationKey } from '../../hooks/useTranslation/TLUiTranslationKey'
 import { useTranslation } from '../../hooks/useTranslation/useTranslation'
 
 /** @public */
 export interface TLUiSliderProps {
+	min?: number
 	steps: number
 	value: number | null
 	label: string
@@ -12,18 +13,24 @@ export interface TLUiSliderProps {
 	onValueChange(value: number): void
 	onHistoryMark(id: string): void
 	'data-testid'?: string
+	ariaValueModifier?: number
 }
 
 /** @public @react */
-export const TldrawUiSlider = memo(function Slider({
-	onHistoryMark,
-	title,
-	steps,
-	value,
-	label,
-	onValueChange,
-	['data-testid']: testId,
-}: TLUiSliderProps) {
+export const TldrawUiSlider = React.forwardRef<HTMLDivElement, TLUiSliderProps>(function Slider(
+	{
+		onHistoryMark,
+		title,
+		min,
+		steps,
+		value,
+		label,
+		onValueChange,
+		['data-testid']: testId,
+		ariaValueModifier = 1,
+	}: TLUiSliderProps,
+	ref
+) {
 	const msg = useTranslation()
 
 	// XXX: Radix starts out our slider with a tabIndex of 0
@@ -45,11 +52,6 @@ export const TldrawUiSlider = memo(function Slider({
 		onHistoryMark('click slider')
 	}, [onHistoryMark])
 
-	const handlePointerUp = useCallback(() => {
-		if (!value) return
-		onValueChange(value)
-	}, [value, onValueChange])
-
 	// N.B. Annoying. For a11y purposes, we need Tab to work.
 	// For some reason, Radix has some custom behavior here
 	// that interferes with tabbing past the slider and then
@@ -66,13 +68,12 @@ export const TldrawUiSlider = memo(function Slider({
 				data-testid={testId}
 				className="tlui-slider"
 				dir="ltr"
-				min={0}
+				min={min ?? 0}
 				max={steps}
 				step={1}
-				value={value ? [value] : undefined}
+				value={value !== null ? [value] : undefined}
 				onPointerDown={handlePointerDown}
 				onValueChange={handleValueChange}
-				onPointerUp={handlePointerUp}
 				onKeyDownCapture={handleKeyEvent}
 				onKeyUpCapture={handleKeyEvent}
 				title={title + ' — ' + msg(label as TLUiTranslationKey)}
@@ -82,9 +83,12 @@ export const TldrawUiSlider = memo(function Slider({
 				</_Slider.Track>
 				{value !== null && (
 					<_Slider.Thumb
-						aria-label={msg('style-panel.opacity')}
+						aria-valuemin={(min ?? 0) * ariaValueModifier}
+						aria-valuenow={value * ariaValueModifier}
+						aria-valuemax={steps * ariaValueModifier}
 						className="tlui-slider__thumb"
 						dir="ltr"
+						ref={ref}
 						tabIndex={tabIndex}
 					/>
 				)}

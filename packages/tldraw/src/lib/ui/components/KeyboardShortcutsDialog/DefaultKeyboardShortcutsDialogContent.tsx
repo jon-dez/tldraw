@@ -181,7 +181,15 @@ export function DefaultKeyboardShortcutsDialogContent() {
 				<TldrawUiMenuItem
 					id="adjust-shape-styles"
 					label="a11y.adjust-shape-styles"
-					kbd="$+[[Enter]]"
+					kbd="cmd+[[Enter]]"
+					onSelect={() => {
+						/* do nothing */
+					}}
+				/>
+				<TldrawUiMenuItem
+					id="open-context-menu"
+					label="a11y.open-context-menu"
+					kbd="cmd+shift+[[Enter]]"
 					onSelect={() => {
 						/* do nothing */
 					}}
@@ -205,6 +213,14 @@ export function DefaultKeyboardShortcutsDialogContent() {
 				<TldrawUiMenuActionItem actionId="enlarge-shapes" />
 				<TldrawUiMenuActionItem actionId="shrink-shapes" />
 				<TldrawUiMenuActionItem actionId="a11y-repeat-shape-announce" />
+				<TldrawUiMenuItem
+					id="a11y-open-keyboard-shortcuts"
+					label="a11y.open-keyboard-shortcuts"
+					kbd="cmd+alt+/"
+					onSelect={() => {
+						/* do nothing */
+					}}
+				/>
 			</TldrawUiMenuGroup>
 			{showCollaborationUi && (
 				<TldrawUiMenuGroup label="shortcuts-dialog.collaboration" id="collaboration">

@@ -108,13 +108,13 @@ id: TLAssetId;
 meta: JsonObject;
 props: Props;
 type: Type;
-typeName: 'asset';
+typeName: "asset";
 }[P]; } & { [P_1 in (undefined extends Props ? "props" : never) | (undefined extends Type ? "type" : never)]?: {
 id: TLAssetId;
 meta: JsonObject;
 props: Props;
 type: Type;
-typeName: 'asset';
+typeName: "asset";
 }[P_1] | undefined; }>>;
 
 // @public (undocumented)
@@ -1482,6 +1482,8 @@ export interface TLShapeCrop {
     // (undocumented)
     bottomRight: VecModel;
     // (undocumented)
+    isCircle?: boolean;
+    // (undocumented)
     topLeft: VecModel;
 }
 
@@ -1568,6 +1570,8 @@ export interface TLVideoShapeProps {
     altText: string;
     // (undocumented)
     assetId: null | TLAssetId;
+    // (undocumented)
+    autoplay: boolean;
     // (undocumented)
     h: number;
     // (undocumented)

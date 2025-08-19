@@ -16,6 +16,7 @@ import { memo, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { defaultBindingUtils } from './defaultBindingUtils'
 import { defaultShapeUtils } from './defaultShapeUtils'
 import { TLUiAssetUrlOverrides } from './ui/assetUrls'
+import { useDefaultEditorAssetsWithOverrides } from './utils/static-assets/assetUrls'
 import { defaultAddFontsFromNode, tipTapDefaultExtensions } from './utils/text/richText'
 
 /** @public */
@@ -77,7 +78,7 @@ const defaultTextOptions = {
 }
 
 /**
- * A renderered SVG image of a Tldraw snapshot.
+ * A rendered SVG image of a Tldraw snapshot.
  *
  * @example
  * ```tsx
@@ -130,6 +131,7 @@ export const TldrawImage = memo(function TldrawImage(props: TldrawImageProps) {
 		assetUrls,
 		textOptions = defaultTextOptions,
 	} = props
+	const assetUrlsWithOverrides = useDefaultEditorAssetsWithOverrides(assetUrls)
 
 	useLayoutEffect(() => {
 		if (!container) return
@@ -148,7 +150,7 @@ export const TldrawImage = memo(function TldrawImage(props: TldrawImageProps) {
 			tools: [],
 			getContainer: () => tempElm,
 			licenseKey,
-			fontAssetUrls: assetUrls?.fonts,
+			fontAssetUrls: assetUrlsWithOverrides.fonts,
 			textOptions,
 		})
 
@@ -157,6 +159,8 @@ export const TldrawImage = memo(function TldrawImage(props: TldrawImageProps) {
 		const shapeIds = editor.getCurrentPageShapeIds()
 
 		async function setSvg() {
+			// We have to wait for the fonts to load so that we can correctly measure text sizes
+			await editor.fonts.loadRequiredFontsForCurrentPage(editor.options.maxFontsToLoadBeforeRender)
 			const imageResult = await editor.toImage([...shapeIds], {
 				bounds,
 				scale,
@@ -194,7 +198,7 @@ export const TldrawImage = memo(function TldrawImage(props: TldrawImageProps) {
 		preserveAspectRatio,
 		licenseKey,
 		pixelRatio,
-		assetUrls,
+		assetUrlsWithOverrides,
 		textOptions,
 		targetDocument,
 	])
