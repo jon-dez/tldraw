@@ -1,4 +1,5 @@
-import { HALF_PI, TLArrowShape, TLShapeId, createShapeId } from '@tldraw/editor'
+import { HALF_PI, TLArrowShape, TLShapeId, createShapeId, toRichText } from '@tldraw/editor'
+import { vi } from 'vitest'
 import { TestEditor } from '../../../test/TestEditor'
 import { createOrUpdateArrowBinding, getArrowBindings } from './shared'
 
@@ -12,7 +13,7 @@ const ids = {
 	arrow1: createShapeId('arrow1'),
 }
 
-jest.useFakeTimers()
+vi.useFakeTimers()
 
 window.requestAnimationFrame = function requestAnimationFrame(cb) {
 	return setTimeout(cb, 1000 / 60)
@@ -217,7 +218,7 @@ describe('Other cases when arrow are moved', () => {
 		// When box one is not selected, unbinds box1 and keeps binding to box2
 		editor.select(ids.arrow1, ids.box2, ids.box3)
 		editor.alignShapes(editor.getSelectedShapeIds(), 'right')
-		jest.advanceTimersByTime(1000)
+		vi.advanceTimersByTime(1000)
 
 		expect(bindings()).toMatchObject({
 			start: { toId: ids.box1, props: { isPrecise: false } },
@@ -227,7 +228,7 @@ describe('Other cases when arrow are moved', () => {
 		// maintains bindings if they would still be over the same shape (but makes them precise), but unbinds others
 		editor.select(ids.arrow1, ids.box3)
 		editor.alignShapes(editor.getSelectedShapeIds(), 'top')
-		jest.advanceTimersByTime(1000)
+		vi.advanceTimersByTime(1000)
 
 		expect(bindings()).toMatchObject({
 			start: { toId: ids.box1, props: { isPrecise: true } },
@@ -244,7 +245,7 @@ describe('Other cases when arrow are moved', () => {
 		// When box one is not selected, unbinds box1 and keeps binding to box2
 		editor.select(ids.arrow1, ids.box2, ids.box3)
 		editor.distributeShapes(editor.getSelectedShapeIds(), 'horizontal')
-		jest.advanceTimersByTime(1000)
+		vi.advanceTimersByTime(1000)
 
 		expect(bindings()).toMatchObject({
 			start: { toId: ids.box1, props: { isPrecise: false } },
@@ -254,7 +255,7 @@ describe('Other cases when arrow are moved', () => {
 		// unbinds when only the arrow is selected (not its bound shapes) if the arrow itself has moved
 		editor.select(ids.arrow1, ids.box3, ids.box4)
 		editor.distributeShapes(editor.getSelectedShapeIds(), 'vertical')
-		jest.advanceTimersByTime(1000)
+		vi.advanceTimersByTime(1000)
 
 		// The arrow didn't actually move
 		expect(bindings()).toMatchObject({
@@ -265,7 +266,7 @@ describe('Other cases when arrow are moved', () => {
 		// The arrow will not move because it is still bound to another shape
 		editor.updateShapes([{ id: ids.box4, type: 'geo', y: -600 }])
 		editor.distributeShapes(editor.getSelectedShapeIds(), 'vertical')
-		jest.advanceTimersByTime(1000)
+		vi.advanceTimersByTime(1000)
 
 		expect(bindings()).toMatchObject({
 			start: undefined,
@@ -333,7 +334,7 @@ describe('Arrow labels', () => {
 		editor.setCurrentTool('arrow').pointerDown(10, 10).pointerMove(100, 100).pointerUp()
 		const arrowId = editor.getOnlySelectedShape()!.id
 		editor.updateShapes<TLArrowShape>([
-			{ id: arrowId, type: 'arrow', props: { text: 'Test Label' } },
+			{ id: arrowId, type: 'arrow', props: { richText: toRichText('Test Label') } },
 		])
 	})
 
@@ -341,7 +342,7 @@ describe('Arrow labels', () => {
 		const arrowId = editor.getOnlySelectedShape()!.id
 		expect(arrow(arrowId)).toMatchObject({
 			props: {
-				text: 'Test Label',
+				richText: toRichText('Test Label'),
 			},
 		})
 	})
@@ -349,11 +350,11 @@ describe('Arrow labels', () => {
 	it('should update the label of an arrow', () => {
 		const arrowId = editor.getOnlySelectedShape()!.id
 		editor.updateShapes<TLArrowShape>([
-			{ id: arrowId, type: 'arrow', props: { text: 'New Label' } },
+			{ id: arrowId, type: 'arrow', props: { richText: toRichText('New Label') } },
 		])
 		expect(arrow(arrowId)).toMatchObject({
 			props: {
-				text: 'New Label',
+				richText: toRichText('New Label'),
 			},
 		})
 	})
@@ -576,5 +577,46 @@ describe("an arrow's parents", () => {
 			start: { toId: boxAid },
 			end: { toId: boxCid },
 		})
+	})
+})
+
+describe('Arrow export bounds', () => {
+	it('excludes labels from shape bounds for export', () => {
+		editor.selectAll().deleteShapes(editor.getSelectedShapeIds())
+
+		// Create shapes for the arrow to bind to
+		editor.createShapes([
+			{ id: ids.box1, type: 'geo', x: 100, y: 100, props: { w: 100, h: 100 } },
+			{ id: ids.box2, type: 'geo', x: 300, y: 100, props: { w: 100, h: 100 } },
+		])
+
+		// Create an arrow with a label
+		editor.createShapes([
+			{
+				id: ids.arrow1,
+				type: 'arrow',
+				x: 0,
+				y: 0,
+				props: {
+					start: { x: 0, y: 0 },
+					end: { x: 0, y: 100 },
+					richText: toRichText('Test Label'),
+				},
+			},
+		])
+
+		// Get the page bounds (should exclude labels due to excludeFromShapeBounds flag)
+		const pageBounds = editor.getShapePageBounds(ids.arrow1)
+		expect(pageBounds).toBeDefined()
+
+		// The bounds should be smaller than if labels were included
+		// Since the arrow has a label that's excluded, the bounds should be minimal
+		expect(pageBounds!.width).toBeLessThan(200) // Should not include label width
+		expect(pageBounds!.height).toBeLessThan(200) // Should not include label height
+
+		// Verify that the arrow has a label (which should be excluded from shape bounds)
+		const arrow = editor.getShape(ids.arrow1) as TLArrowShape
+		expect(arrow.props.richText).toBeDefined()
+		expect(arrow.props.richText).not.toBeNull()
 	})
 })
