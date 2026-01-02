@@ -29,6 +29,7 @@ const config = {
 			},
 			workspaceOverrides: {
 				'apps/vscode/*': { runsAfter: { 'refresh-assets': {} } },
+				'apps/obsidian/*': { runsAfter: { 'refresh-assets': {} } },
 				'packages/*': {
 					runsAfter: { 'build-api': { in: 'self-only' }, prebuild: { in: 'self-only' } },
 					cache: {
@@ -58,6 +59,7 @@ const config = {
 			cache: 'none',
 			workspaceOverrides: {
 				'apps/vscode/*': { runsAfter: { build: { in: 'self-only' } } },
+				'apps/obsidian/*': { runsAfter: { build: { in: 'self-only' } } },
 			},
 		},
 		e2e: {
