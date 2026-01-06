@@ -2873,7 +2873,7 @@ export interface SvgExportContext {
 // @public (undocumented)
 export interface SvgExportDef {
     // (undocumented)
-    getElement(): null | Promise<null | ReactElement> | ReactElement;
+    getElement(document: Document): null | Promise<null | ReactElement> | ReactElement;
     // (undocumented)
     key: string;
 }

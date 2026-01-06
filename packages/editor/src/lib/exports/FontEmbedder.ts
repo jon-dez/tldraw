@@ -26,9 +26,9 @@ export class FontEmbedder {
 	private readonly fontFacesToEmbed = new Set<ParsedFontFace>()
 	private readonly pendingPromises: Promise<void>[] = []
 
-	startFindingCurrentDocumentFontFaces() {
+	startFindingDocumentFontFaces(document: Document) {
 		assert(!this.fontFacesPromise, 'FontEmbedder already started')
-		this.fontFacesPromise = getCurrentDocumentFontFaces()
+		this.fontFacesPromise = getDocumentFontFaces(document)
 	}
 
 	@bind onFontFamilyValue(fontFamilyValue: string) {
@@ -80,7 +80,7 @@ export class FontEmbedder {
 	}
 }
 
-async function getCurrentDocumentFontFaces() {
+async function getDocumentFontFaces(document: Document) {
 	const fontFaces: (ParsedFontFace[] | Promise<ParsedFontFace[] | null>)[] = []
 
 	// In exportToSvg we add the exported node to the DOM temporarily.

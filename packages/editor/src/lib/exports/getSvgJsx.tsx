@@ -38,7 +38,8 @@ import { Mat } from '../primitives/Mat'
 import { ExportDelay } from './ExportDelay'
 
 export function getSvgJsx(editor: Editor, ids: TLShapeId[], opts: TLImageExportOptions = {}) {
-	if (!window.document) throw Error('No document')
+	const editorDocument = editor.getContainer().ownerDocument
+	if (!editorDocument) throw Error('No document')
 
 	const {
 		scale = 1,
@@ -77,7 +78,7 @@ export function getSvgJsx(editor: Editor, ids: TLShapeId[], opts: TLImageExportO
 	const h = bbox.height * scale
 
 	try {
-		document.body.focus?.() // weird but necessary
+		editorDocument.body.focus?.() // weird but necessary
 	} catch {
 		// not implemented
 	}
@@ -218,7 +219,7 @@ function SvgExport({
 		stateAtom.update((state) => {
 			if (hasOwnProperty(state.defsById, def.key)) return state
 
-			const promise = Promise.resolve(def.getElement())
+			const promise = Promise.resolve(def.getElement(editor.getContainer().ownerDocument))
 			waitUntil(
 				promise.then((result) => {
 					stateAtom.update((state) => ({

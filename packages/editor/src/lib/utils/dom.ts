@@ -16,6 +16,29 @@ whatever reason.
 import React from 'react'
 import { debugFlags, pointerCaptureTrackingObject } from './debug-flags'
 
+declare global {
+	interface Node {
+		/**
+		 * Cross-window capable instanceof check, a drop-in replacement
+		 * for instanceof checks on DOM Nodes. Remember to also check
+		 * for nulls when necessary.
+		 *
+		 * #NOTE: Copied from Obsidian.md API https://github.com/obsidianmd/obsidian-api/blob/master/obsidian.d.ts
+		 * 
+		 * TODO: Find a better way to do this. It's not really a good idea to rely on the Obsidian.md API if it only works for Obsidian.md.
+		 *
+		 * @param type
+		 */
+		instanceOf<T>(type: { new (): T }): this is T
+		/**
+		 * The window object this node belongs to, or the global window.
+		 *
+		 * #NOTE: Copied from Obsidian.md API
+		 */
+		win: Window
+	}
+}
+
 /** @public */
 export function loopToHtmlElement(elm: Element): HTMLElement {
 	if (elm.nodeType === Node.ELEMENT_NODE) return elm as HTMLElement

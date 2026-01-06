@@ -116,7 +116,7 @@ export class StyleEmbedder {
 			const shadowRoot = element.shadowRoot
 
 			if (shadowRoot) {
-				const clonedCustomEl = document.createElement('div')
+				const clonedCustomEl = element.ownerDocument.createElement('div')
 				this.styles.set(clonedCustomEl, this.styles.get(element)!)
 
 				clonedCustomEl.setAttribute('data-tl-custom-element', element.tagName)

@@ -3,6 +3,7 @@ import {
 	TLPointerEventInfo,
 	isAccelKey,
 	preventDefault,
+	useContainer,
 	useEditor,
 	useValue,
 } from '@tldraw/editor'
@@ -23,6 +24,7 @@ const SKIP_KBDS = [
 
 /** @public */
 export function useKeyboardShortcuts() {
+	const container = useContainer()
 	const editor = useEditor()
 
 	const isReadonlyMode = useReadonly()
@@ -142,7 +144,7 @@ export function useKeyboardShortcuts() {
 		return () => {
 			disposables.forEach((d) => d())
 		}
-	}, [actions, tools, isReadonlyMode, editor, isFocused])
+	}, [actions, tools, isReadonlyMode, editor, container, isFocused])
 }
 
 export function areShortcutsDisabled(editor: Editor) {

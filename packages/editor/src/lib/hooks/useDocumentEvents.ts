@@ -275,9 +275,9 @@ export function useDocumentEvents() {
 
 		container.addEventListener('wheel', handleWheel, { passive: false })
 
-		document.addEventListener('gesturestart', preventDefault)
-		document.addEventListener('gesturechange', preventDefault)
-		document.addEventListener('gestureend', preventDefault)
+		container.ownerDocument.addEventListener('gesturestart', preventDefault)
+		container.ownerDocument.addEventListener('gesturechange', preventDefault)
+		container.ownerDocument.addEventListener('gestureend', preventDefault)
 
 		container.addEventListener('keydown', handleKeyDown)
 		container.addEventListener('keyup', handleKeyUp)
@@ -287,9 +287,9 @@ export function useDocumentEvents() {
 
 			container.removeEventListener('wheel', handleWheel)
 
-			document.removeEventListener('gesturestart', preventDefault)
-			document.removeEventListener('gesturechange', preventDefault)
-			document.removeEventListener('gestureend', preventDefault)
+			container.ownerDocument.removeEventListener('gesturestart', preventDefault)
+			container.ownerDocument.removeEventListener('gesturechange', preventDefault)
+			container.ownerDocument.removeEventListener('gestureend', preventDefault)
 
 			container.removeEventListener('keydown', handleKeyDown)
 			container.removeEventListener('keyup', handleKeyUp)

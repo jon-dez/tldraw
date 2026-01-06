@@ -38,7 +38,7 @@ const clipboardMimeTypesByFormat = {
 	jpeg: 'image/jpeg',
 	png: 'image/png',
 	webp: 'image/webp',
-	svg: 'text/plain',
+	svg: 'image/svg+xml',
 }
 
 export function exportToImagePromiseForClipboard(

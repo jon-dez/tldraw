@@ -4,6 +4,7 @@ import {
 	SharedStyle,
 	StyleProp,
 	TLDefaultColorStyle,
+	useContainer,
 	useEditor,
 } from '@tldraw/editor'
 import { memo, useMemo, useRef } from 'react'
@@ -60,6 +61,7 @@ function StylePanelButtonPickerInlineInner<T extends string>(
 		onValueChange = ctx.onValueChange,
 		onHistoryMark = ctx.onHistoryMark,
 	} = props
+	const container = useContainer()
 	const theme = useDefaultColorTheme()
 	const editor = useEditor()
 	const msg = useTranslation()
@@ -76,7 +78,7 @@ function StylePanelButtonPickerInlineInner<T extends string>(
 	} = useMemo(() => {
 		const handlePointerUp = () => {
 			rPointing.current = false
-			window.removeEventListener('pointerup', handlePointerUp)
+			container.win.removeEventListener('pointerup', handlePointerUp)
 
 			// This is fun little micro-optimization to make sure that the focus
 			// is retained on a text label. That way, you can continue typing
@@ -108,8 +110,8 @@ function StylePanelButtonPickerInlineInner<T extends string>(
 			onValueChange(style, id as T)
 
 			rPointing.current = true
-			rPointingOriginalActiveElement.current = document.activeElement as HTMLElement
-			window.addEventListener('pointerup', handlePointerUp) // see TLD-658
+			rPointingOriginalActiveElement.current = container.ownerDocument.activeElement as HTMLElement
+			container.win.addEventListener('pointerup', handlePointerUp) // see TLD-658
 		}
 
 		const handleButtonPointerEnter = (e: React.PointerEvent<HTMLButtonElement>) => {
@@ -132,7 +134,7 @@ function StylePanelButtonPickerInlineInner<T extends string>(
 			handleButtonPointerEnter,
 			handleButtonPointerUp,
 		}
-	}, [editor, breakpoint, value, onHistoryMark, onValueChange, style])
+	}, [editor, breakpoint, value, onHistoryMark, onValueChange, style, container])
 
 	const Layout = items.length > 4 ? TldrawUiGrid : TldrawUiRow
 

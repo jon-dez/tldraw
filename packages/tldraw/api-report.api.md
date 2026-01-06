@@ -70,6 +70,7 @@ import { TLArrowShapeKind } from '@tldraw/editor';
 import { TLArrowShapeProps } from '@tldraw/editor';
 import { TLAsset } from '@tldraw/editor';
 import { TLAssetId } from '@tldraw/editor';
+import { TLAssetStore } from '@tldraw/editor';
 import { TLBookmarkAsset } from '@tldraw/editor';
 import { TLBookmarkShape } from '@tldraw/editor';
 import { TLBookmarkShapeProps } from '@tldraw/editor';
@@ -2519,7 +2520,7 @@ export enum PORTRAIT_BREAKPOINT {
 export function PreferencesGroup(): JSX_2.Element;
 
 // @public (undocumented)
-export function preloadFont(id: string, font: TLTypeFace): Promise<FontFace>;
+export function preloadFont(id: string, font: TLTypeFace, targetDocument?: Document): Promise<FontFace>;
 
 // @public (undocumented)
 export function PrintItem(): JSX_2.Element;
@@ -3219,6 +3220,7 @@ export const TldrawImage: NamedExoticComponent<TldrawImageProps>;
 
 // @public (undocumented)
 export interface TldrawImageProps extends TLImageExportOptions {
+    assets?: TLAssetStore;
     assetUrls?: TLUiAssetUrlOverrides;
     bindingUtils?: readonly TLAnyBindingUtilConstructor[];
     format?: 'png' | 'svg';
@@ -3226,6 +3228,7 @@ export interface TldrawImageProps extends TLImageExportOptions {
     pageId?: TLPageId;
     shapeUtils?: readonly TLAnyShapeUtilConstructor[];
     snapshot: Partial<TLEditorSnapshot> | TLStoreSnapshot;
+    targetDocument?: Document;
     textOptions?: TLTextOptions;
 }
 

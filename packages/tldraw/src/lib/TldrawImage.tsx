@@ -2,6 +2,7 @@ import {
 	Editor,
 	TLAnyBindingUtilConstructor,
 	TLAnyShapeUtilConstructor,
+	TLAssetStore,
 	TLEditorSnapshot,
 	TLImageExportOptions,
 	TLPageId,
@@ -48,9 +49,21 @@ export interface TldrawImageProps extends TLImageExportOptions {
 	 */
 	licenseKey?: string
 	/**
+	 * How should this store resolve assets?
+	 */
+	assets?: TLAssetStore
+	/**
 	 * Asset URL overrides.
 	 */
 	assetUrls?: TLUiAssetUrlOverrides
+	/**
+	 * The document to use in place of the global document object for the following:
+	 *
+	 * - preloading fonts
+	 *
+	 * Using this prevents bugs when using pop-out windows in Electron.
+	 */
+	targetDocument?: Document
 	/**
 	 * Text options for the editor.
 	 */
@@ -96,7 +109,13 @@ export const TldrawImage = memo(function TldrawImage(props: TldrawImageProps) {
 		() => mergeArraysAndReplaceDefaults('type', _bindingUtils, defaultBindingUtils),
 		[_bindingUtils]
 	)
-	const store = useTLStore({ snapshot: props.snapshot, shapeUtils: shapeUtilsWithDefaults })
+	const store = useTLStore({
+		assets: props.assets,
+		snapshot: props.snapshot,
+		shapeUtils: shapeUtilsWithDefaults,
+	})
+
+	const targetDocument = props.targetDocument ?? document
 
 	const {
 		pageId,
@@ -120,7 +139,7 @@ export const TldrawImage = memo(function TldrawImage(props: TldrawImageProps) {
 
 		let isCancelled = false
 
-		const tempElm = document.createElement('div')
+		const tempElm = targetDocument.createElement('div')
 		container.appendChild(tempElm)
 		container.classList.add('tl-container', 'tl-theme__light')
 
@@ -181,6 +200,7 @@ export const TldrawImage = memo(function TldrawImage(props: TldrawImageProps) {
 		pixelRatio,
 		assetUrlsWithOverrides,
 		textOptions,
+		targetDocument,
 	])
 
 	useEffect(() => {

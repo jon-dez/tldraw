@@ -190,6 +190,7 @@ function useIsMousingDownOnTextEditor(textEditor: TiptapEditor) {
 		touchDownEvents.forEach((eventName: string) => {
 			textEditor.view.dom.addEventListener(eventName, handlePointingDown)
 		})
+		const document = textEditor.view.dom.ownerDocument
 		touchUpEvents.forEach((eventName: string) => {
 			document.body.addEventListener(eventName, handlePointingUp)
 		})

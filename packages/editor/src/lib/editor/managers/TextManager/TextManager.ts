@@ -75,7 +75,7 @@ export class TextManager {
 	private elm: HTMLDivElement
 
 	constructor(public editor: Editor) {
-		const elm = document.createElement('div')
+		const elm = editor.getContainer().ownerDocument.createElement('div')
 		elm.classList.add('tl-text')
 		elm.classList.add('tl-text-measure')
 		elm.setAttribute('dir', 'auto')
