@@ -1,0 +1,68 @@
+name: Publish Obsidian Plugin
+
+on:
+  push:
+    branches:
+      - main
+      - production
+
+env:
+  CI: 1
+  PRINT_GITHUB_ANNOTATIONS: 1
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  publish:
+    name: Publish Obsidian Plugin
+    environment: obsidian plugin publish
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency: obsidian-plugin-publish
+
+    steps:
+      - name: Generate GH token
+        id: generate_token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.HUPPY_APP_ID }}
+          private-key: ${{ secrets.HUPPY_APP_PRIVATE_KEY }}
+
+      # NOTE: A different github repository is used to publish the Obsidian plugin in order to avoid conflicts with releases tagged in the monorepo.
+      # - Obsidian pulls plugin releases from the releases tab of the repository.
+      # - The manifest.json in the repository should be updated with the latest release version.
+      # - The latest release should be tagged with the same version as version in the manifest.json.
+      # - Documentation on how Obsidian plugin releases are pulled: https://github.com/obsidianmd/obsidian-releases?tab=readme-ov-file#how-community-plugins-are-pulled
+      # - Setting the environment variable: https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-variables#creating-configuration-variables-for-a-repository
+      - name: Generate GH token for Obsidian plugin release repository
+        id: generate_token_obsidian_plugin_release
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.HUPPY_APP_ID }}
+          private-key: ${{ secrets.HUPPY_APP_PRIVATE_KEY }}
+          owner: ${{ env.OBSIDIAN_PLUGIN_RELEASE_OWNER }}
+          repositories: |
+            ${{ env.OBSIDIAN_PLUGIN_RELEASE_REPOSITORY }}
+
+      - name: Check out code
+        uses: actions/checkout@v6
+        with:
+          submodules: true
+          token: ${{ steps.generate_token.outputs.token }}
+
+      - uses: ./.github/actions/setup
+
+      - name: Build types
+        run: yarn build-types
+
+      - name: Publish plugin
+        run: yarn tsx ./internal/scripts/publish-obsidian-plugin.ts
+        env:
+          TLDRAW_ENV: ${{ (github.ref == 'refs/heads/production' && 'production') || (github.ref == 'refs/heads/main' && 'staging') }}
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+          PLUGIN_RELEASE_GH_TOKEN: ${{ steps.generate_token_obsidian_plugin_release.outputs.token }}
+          PLUGIN_RELEASE_GITHUB_REPOSITORY: ${{ env.OBSIDIAN_PLUGIN_RELEASE_OWNER }}/${{ env.OBSIDIAN_PLUGIN_RELEASE_REPOSITORY }}
+          # GITHUB_REPOSITORY is automatically set by GitHub Actions to the repository running the workflow (the monorepo)
