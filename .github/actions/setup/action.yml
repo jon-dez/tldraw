@@ -1,5 +1,11 @@
 name: Setup tldraw/tldraw
 description: Set up node & yarn
+inputs:
+  working-directory:
+    description: The working directory to set up the environment in
+    required: true
+    type: string
+    default: '.'
 
 runs:
   using: composite
@@ -7,15 +13,18 @@ runs:
     # see https://github.com/actions/setup-node/issues/899 for one of the reasons why this
     # needs to be done before action/setup-node
     - name: Enable corepack
+      working-directory: ${{ inputs.working-directory }}
       run: npm i -g corepack
       shell: bash
 
     - name: Setup Node.js Environment
+      working-directory: ${{ inputs.working-directory }}
       uses: actions/setup-node@v3
       with:
         node-version: 22.16.0
         cache: 'yarn'
 
     - name: Install dependencies
+      working-directory: ${{ inputs.working-directory }}
       run: yarn install --immutable
       shell: bash
