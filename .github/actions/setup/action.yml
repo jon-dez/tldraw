@@ -22,6 +22,7 @@ runs:
       with:
         node-version: 22.16.0
         cache: 'yarn'
+        cache-dependency-path: ${{ inputs.working-directory }}/yarn.lock
 
     - name: Install dependencies
       working-directory: ${{ inputs.working-directory }}
