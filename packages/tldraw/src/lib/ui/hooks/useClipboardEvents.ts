@@ -8,7 +8,6 @@ import {
 	compact,
 	isDefined,
 	preventDefault,
-	stopEventPropagation,
 	uniq,
 	useEditor,
 	useMaybeEditor,
@@ -587,6 +586,8 @@ async function handleClipboardThings(editor: Editor, things: ClipboardThing[], p
  * @public
  */
 const handleNativeOrMenuCopy = async (editor: Editor) => {
+	const navigator =
+		editor.getContainer().ownerDocument?.defaultView?.navigator ?? globalThis.navigator
 	const content = await editor.resolveAssetsInContent(
 		editor.getContentFromCurrentPage(editor.getSelectedShapeIds())
 	)
@@ -717,6 +718,7 @@ export function useMenuClipboardEvents() {
 /** @public */
 export function useNativeClipboardEvents() {
 	const editor = useEditor()
+	const ownerDocument = editor.getContainer().ownerDocument
 	const trackEvent = useUiEvents()
 
 	const appIsFocused = useValue('editor.isFocused', () => editor.getInstanceState().isFocused, [
@@ -764,10 +766,9 @@ export function useNativeClipboardEvents() {
 			}
 		}
 
-		const container = editor.getContainer()
 		const paste = (e: ClipboardEvent) => {
 			if (disablingMiddleClickPaste) {
-				stopEventPropagation(e)
+				editor.markEventAsHandled(e)
 				return
 			}
 
@@ -806,7 +807,7 @@ export function useNativeClipboardEvents() {
 					(clipboardItems) => {
 						if (
 							Array.isArray(clipboardItems) &&
-							clipboardItems[0] instanceof container.win.window.ClipboardItem
+							clipboardItems[0] instanceof ownerDocument.win.window.ClipboardItem
 						) {
 							handlePasteFromClipboardApi({ editor, clipboardItems, point, fallbackFiles })
 						}
@@ -824,16 +825,16 @@ export function useNativeClipboardEvents() {
 			trackEvent('paste', { source: 'kbd' })
 		}
 
-		container.ownerDocument.addEventListener('copy', copy)
-		container.ownerDocument.addEventListener('cut', cut)
-		container.ownerDocument.addEventListener('paste', paste)
-		container.ownerDocument.addEventListener('pointerup', pointerUpHandler)
+		ownerDocument?.addEventListener('copy', copy)
+		ownerDocument?.addEventListener('cut', cut)
+		ownerDocument?.addEventListener('paste', paste)
+		ownerDocument?.addEventListener('pointerup', pointerUpHandler)
 
 		return () => {
-			container.ownerDocument.removeEventListener('copy', copy)
-			container.ownerDocument.removeEventListener('cut', cut)
-			container.ownerDocument.removeEventListener('paste', paste)
-			container.ownerDocument.removeEventListener('pointerup', pointerUpHandler)
+			ownerDocument?.removeEventListener('copy', copy)
+			ownerDocument?.removeEventListener('cut', cut)
+			ownerDocument?.removeEventListener('paste', paste)
+			ownerDocument?.removeEventListener('pointerup', pointerUpHandler)
 		}
-	}, [editor, trackEvent, appIsFocused])
+	}, [editor, trackEvent, appIsFocused, ownerDocument])
 }

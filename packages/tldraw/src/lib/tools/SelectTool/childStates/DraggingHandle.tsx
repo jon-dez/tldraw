@@ -12,14 +12,16 @@ import {
 	snapAngle,
 	sortByIndex,
 	structuredClone,
+	warnOnce,
 } from '@tldraw/editor'
+import { ArrowShapeUtil } from '../../../shapes/arrow/ArrowShapeUtil'
 import { clearArrowTargetState } from '../../../shapes/arrow/arrowTargetState'
 import { getArrowBindings } from '../../../shapes/arrow/shared'
 
 export type DraggingHandleInfo = TLPointerEventInfo & {
 	shape: TLArrowShape | TLLineShape
 	target: 'handle'
-	onInteractionEnd?: string
+	onInteractionEnd?: string | (() => void)
 	isCreating?: boolean
 	creatingMarkId?: string
 }
@@ -45,7 +47,9 @@ export class DraggingHandle extends StateNode {
 	override onEnter(info: DraggingHandleInfo) {
 		const { shape, isCreating, creatingMarkId, handle } = info
 		this.info = info
-		this.parent.setCurrentToolIdMask(info.onInteractionEnd)
+		if (typeof info.onInteractionEnd === 'string') {
+			this.parent.setCurrentToolIdMask(info.onInteractionEnd)
+		}
 		this.shapeId = shape.id
 		this.markId = ''
 
@@ -79,22 +83,33 @@ export class DraggingHandle extends StateNode {
 		// Find the adjacent handle
 		this.initialAdjacentHandle = null
 
-		// Start from the handle and work forward
-		for (let i = index + 1; i < handles.length; i++) {
-			const handle = handles[i]
-			if (handle.type === 'vertex' && handle.id !== 'middle' && handle.id !== info.handle.id) {
-				this.initialAdjacentHandle = handle
-				break
+		// First, check if the handle specifies a custom reference handle
+		if (info.handle.snapReferenceHandleId) {
+			const customHandle = handles.find((h) => h.id === info.handle.snapReferenceHandleId)
+			if (customHandle) {
+				this.initialAdjacentHandle = customHandle
 			}
 		}
 
-		// If still no handle, start from the end and work backward
+		// If no custom reference handle, use default behavior
 		if (!this.initialAdjacentHandle) {
-			for (let i = handles.length - 1; i >= 0; i--) {
+			// Start from the handle and work forward
+			for (let i = index + 1; i < handles.length; i++) {
 				const handle = handles[i]
 				if (handle.type === 'vertex' && handle.id !== 'middle' && handle.id !== info.handle.id) {
 					this.initialAdjacentHandle = handle
 					break
+				}
+			}
+
+			// If still no handle, start from the end and work backward
+			if (!this.initialAdjacentHandle) {
+				for (let i = handles.length - 1; i >= 0; i--) {
+					const handle = handles[i]
+					if (handle.type === 'vertex' && handle.id !== 'middle' && handle.id !== info.handle.id) {
+						this.initialAdjacentHandle = handle
+						break
+					}
 				}
 			}
 		}
@@ -120,6 +135,7 @@ export class DraggingHandle extends StateNode {
 		const handleDragInfo = {
 			handle: this.initialHandle,
 			isPrecise: this.isPrecise,
+			isCreatingShape: !!this.info.isCreating,
 			initial: shape,
 		}
 		const util = this.editor.getShapeUtil(shape)
@@ -134,10 +150,13 @@ export class DraggingHandle extends StateNode {
 	}
 
 	// Only relevant to arrows
-	private exactTimeout = -1 as any
+	private exactTimeout = -1
 
 	// Only relevant to arrows
 	private resetExactTimeout() {
+		const arrowUtil = this.editor.getShapeUtil<ArrowShapeUtil>('arrow')
+		const timeoutValue = arrowUtil.options.pointingPreciseTimeout
+
 		if (this.exactTimeout !== -1) {
 			this.clearExactTimeout()
 		}
@@ -149,7 +168,7 @@ export class DraggingHandle extends StateNode {
 				this.update()
 			}
 			this.exactTimeout = -1
-		}, 750)
+		}, timeoutValue)
 	}
 
 	// Only relevant to arrows
@@ -204,6 +223,7 @@ export class DraggingHandle extends StateNode {
 			const handleDragInfo = {
 				handle: this.initialHandle,
 				isPrecise: this.isPrecise,
+				isCreatingShape: !!this.info.isCreating,
 				initial: this.info.shape,
 			}
 			const endChanges = util.onHandleDragEnd?.(shape, handleDragInfo)
@@ -213,11 +233,17 @@ export class DraggingHandle extends StateNode {
 		}
 
 		const { onInteractionEnd } = this.info
-		if (this.editor.getInstanceState().isToolLocked && onInteractionEnd) {
-			// Return to the tool that was active before this one,
-			// but only if tool lock is turned on!
-			this.editor.setCurrentTool(onInteractionEnd, { shapeId: this.shapeId })
-			return
+		if (onInteractionEnd) {
+			if (typeof onInteractionEnd === 'string') {
+				if (this.editor.getInstanceState().isToolLocked && onInteractionEnd) {
+					// Return to the tool that was active before this one but only if tool lock is turned on!
+					this.editor.setCurrentTool(onInteractionEnd, { shapeId: this.shapeId })
+					return
+				}
+			} else {
+				onInteractionEnd?.()
+				return
+			}
 		}
 
 		this.parent.transition('idle')
@@ -231,6 +257,7 @@ export class DraggingHandle extends StateNode {
 			const handleDragInfo = {
 				handle: this.initialHandle,
 				isPrecise: this.isPrecise,
+				isCreatingShape: !!this.info.isCreating,
 				initial: this.info.shape,
 			}
 			util.onHandleDragCancel?.(shape, handleDragInfo)
@@ -241,9 +268,12 @@ export class DraggingHandle extends StateNode {
 
 		const { onInteractionEnd } = this.info
 		if (onInteractionEnd) {
-			// Return to the tool that was active before this one,
-			// whether tool lock is turned on or not!
-			this.editor.setCurrentTool(onInteractionEnd, { shapeId: this.shapeId })
+			if (typeof onInteractionEnd === 'string') {
+				// Return to the tool that was active before this one, whether tool lock is turned on or not!
+				this.editor.setCurrentTool(onInteractionEnd, { shapeId: this.shapeId })
+			} else {
+				onInteractionEnd?.()
+			}
 			return
 		}
 
@@ -287,7 +317,18 @@ export class DraggingHandle extends StateNode {
 
 		let nextHandle = { ...initialHandle, x: point.x, y: point.y }
 
-		if (initialHandle.canSnap && (isSnapMode ? !ctrlKey : ctrlKey)) {
+		let canSnap = false
+		// eslint-disable-next-line @typescript-eslint/no-deprecated
+		if (initialHandle.canSnap && initialHandle.snapType) {
+			warnOnce(
+				'canSnap is deprecated. Cannot use both canSnap and snapType together - snapping disabled. Please use only snapType.'
+			)
+		} else {
+			// eslint-disable-next-line @typescript-eslint/no-deprecated
+			canSnap = initialHandle.canSnap || initialHandle.snapType !== undefined
+		}
+
+		if (canSnap && (isSnapMode ? !ctrlKey : ctrlKey)) {
 			// We're snapping
 			const pageTransform = editor.getShapePageTransform(shape.id)
 			if (!pageTransform) throw Error('Expected a page transform')
@@ -304,6 +345,7 @@ export class DraggingHandle extends StateNode {
 		const changes = util.onHandleDrag?.(shape, {
 			handle: nextHandle,
 			isPrecise: this.isPrecise || altKey,
+			isCreatingShape: !!this.info.isCreating,
 			initial: initial,
 		})
 

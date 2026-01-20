@@ -33,12 +33,6 @@
       "value": "Auto"
     }
   ],
-  "0776e18496": [
-    {
-      "type": 0,
-      "value": "Save and share"
-    }
-  ],
   "07dbd11b21": [
     {
       "type": 0,
@@ -57,6 +51,12 @@
       "value": "Account"
     }
   ],
+  "08d2d725a9": [
+    {
+      "type": 0,
+      "value": "Create a free account to save your work, collaborate in real-time, and more."
+    }
+  ],
   "0b27918290": [
     {
       "type": 0,
@@ -69,6 +69,12 @@
       "value": "File menu"
     }
   ],
+  "0beb3ca97b": [
+    {
+      "type": 0,
+      "value": "tldraw is a free and instant virtual whiteboard."
+    }
+  ],
   "0d1f2bb523": [
     {
       "type": 0,
@@ -79,6 +85,12 @@
     {
       "type": 0,
       "value": "Publish"
+    }
+  ],
+  "12c8a9838c": [
+    {
+      "type": 0,
+      "value": "Try the tldraw SDK"
     }
   ],
   "13ddd375ad": [
@@ -105,10 +117,16 @@
       "value": "Today"
     }
   ],
-  "22d84a12fd": [
+  "20976e7bec": [
     {
       "type": 0,
-      "value": "Figjam but tldraw"
+      "value": "Room is full"
+    }
+  ],
+  "21bfb2dc2e": [
+    {
+      "type": 0,
+      "value": "This room is approaching its size limit. Consider removing some content or starting a new file."
     }
   ],
   "250ddea65c": [
@@ -123,10 +141,10 @@
       "value": "Upload failed"
     }
   ],
-  "2c61d18599": [
+  "2deec2cb74": [
     {
       "type": 0,
-      "value": "Miro but good and free"
+      "value": "This room has reached its size limit and changes might no longer be saved. Remove some content or start a new file."
     }
   ],
   "31246941ad": [
@@ -153,10 +171,10 @@
       "value": "Editor"
     }
   ],
-  "37b3dca331": [
+  "3bc7d6ea2f": [
     {
       "type": 0,
-      "value": "Please sign in"
+      "value": "Continue with email"
     }
   ],
   "3bd1b98dbd": [
@@ -177,22 +195,10 @@
       "value": "Accept all"
     }
   ],
-  "3fc6d0c83a": [
-    {
-      "type": 0,
-      "value": "Add friend"
-    }
-  ],
   "42e53c47c1": [
     {
       "type": 0,
       "value": "Contact the owner to request access."
-    }
-  ],
-  "44281ab6e5": [
-    {
-      "type": 0,
-      "value": "Log up"
     }
   ],
   "44db318ee5": [
@@ -229,12 +235,6 @@
     {
       "type": 0,
       "value": "Reload"
-    }
-  ],
-  "4ea0bb66f7": [
-    {
-      "type": 0,
-      "value": "An account would be nice"
     }
   ],
   "50db1b7e1e": [
@@ -301,6 +301,12 @@
       "value": "Share"
     }
   ],
+  "5bb6cf3b53": [
+    {
+      "type": 0,
+      "value": "Room getting large"
+    }
+  ],
   "5bcc12ace8": [
     {
       "type": 0,
@@ -311,12 +317,6 @@
     {
       "type": 0,
       "value": "Old browser detected. Please update your browser to use this app."
-    }
-  ],
-  "5bef23eb7e": [
-    {
-      "type": 0,
-      "value": "Create your account"
     }
   ],
   "5d26ae7550": [
@@ -361,10 +361,10 @@
       "value": "A new version of tldraw is available. Please reload the page to continue."
     }
   ],
-  "697c59072d": [
+  "6832ac5936": [
     {
       "type": 0,
-      "value": "Sign in to save"
+      "value": "Enter your email address"
     }
   ],
   "6a26f54883": [
@@ -445,6 +445,12 @@
       "value": "Invalid request."
     }
   ],
+  "78e9815992": [
+    {
+      "type": 0,
+      "value": "Got it"
+    }
+  ],
   "797799f35e": [
     {
       "type": 0,
@@ -461,12 +467,6 @@
     {
       "type": 0,
       "value": "Restore version"
-    }
-  ],
-  "7c7d5d493e": [
-    {
-      "type": 0,
-      "value": "Please sign up"
     }
   ],
   "7cb5f8b4a5": [
@@ -527,12 +527,6 @@
       "value": "."
     }
   ],
-  "84c89d47c7": [
-    {
-      "type": 0,
-      "value": "Share for free"
-    }
-  ],
   "85a082de1b": [
     {
       "type": 0,
@@ -565,10 +559,10 @@
       "value": "To continue editing please copy the room to your files."
     }
   ],
-  "8ea211024d": [
+  "8c2d3d730c": [
     {
       "type": 0,
-      "value": "Create a free account"
+      "value": "Check your email for a verification code."
     }
   ],
   "8eb2c00e96": [
@@ -601,16 +595,54 @@
       "value": "Copy to my files"
     }
   ],
+  "95aacd4d4a": [
+    {
+      "type": 0,
+      "value": "Sign in with Google"
+    }
+  ],
+  "95d2109dc8": [
+    {
+      "type": 0,
+      "value": "Build with the tldraw SDK"
+    }
+  ],
   "96165d6df5": [
     {
       "type": 0,
       "value": "This month"
     }
   ],
+  "985a4b720f": [
+    {
+      "type": 0,
+      "value": "Terms of Use"
+    }
+  ],
   "9914a0ce04": [
     {
       "type": 0,
       "value": "Light"
+    }
+  ],
+  "9b33f5c63c": [
+    {
+      "type": 0,
+      "value": "Didn’t receive a code? "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "Resend"
+        }
+      ],
+      "type": 8,
+      "value": "resend"
+    },
+    {
+      "type": 0,
+      "value": "."
     }
   ],
   "9bef626805": [
@@ -727,10 +759,10 @@
       "value": "Guest user"
     }
   ],
-  "b52dc007ac": [
+  "b357b524e7": [
     {
       "type": 0,
-      "value": "Sign up (free and good)"
+      "value": "Email address"
     }
   ],
   "b6d4223e60": [
@@ -815,28 +847,30 @@
       "value": "Upload .tldr files"
     }
   ],
-  "bffe9a3c9a": [
-    {
-      "type": 0,
-      "value": "Log in"
-    }
-  ],
-  "c079282475": [
-    {
-      "type": 0,
-      "value": "Share your work"
-    }
-  ],
   "c2276c9127": [
     {
       "type": 0,
       "value": "Learn more about sharing."
     }
   ],
-  "c24e43cd1a": [
+  "c28aed8348": [
     {
       "type": 0,
-      "value": "You'll sign up, won't you?"
+      "value": "Allow "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "analytics"
+        }
+      ],
+      "type": 8,
+      "value": "cookies"
+    },
+    {
+      "type": 0,
+      "value": " to help us improve tldraw."
     }
   ],
   "c303bd1095": [
@@ -869,12 +903,6 @@
       "value": "Sign out"
     }
   ],
-  "c8c6a6504a": [
-    {
-      "type": 0,
-      "value": "You should sign up"
-    }
-  ],
   "cceaefbc20": [
     {
       "type": 0,
@@ -893,12 +921,6 @@
       "value": "Learn more about publishing."
     }
   ],
-  "d0eedb7995": [
-    {
-      "type": 0,
-      "value": "Hey"
-    }
-  ],
   "d3d2e61733": [
     {
       "type": 0,
@@ -909,6 +931,40 @@
     {
       "type": 0,
       "value": "Toggle sidebar"
+    }
+  ],
+  "d638a3344b": [
+    {
+      "type": 0,
+      "value": "Before you start, please accept our "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "terms of use"
+        }
+      ],
+      "type": 8,
+      "value": "tos"
+    },
+    {
+      "type": 0,
+      "value": " and "
+    },
+    {
+      "children": [
+        {
+          "type": 0,
+          "value": "privacy policy"
+        }
+      ],
+      "type": 8,
+      "value": "privacy"
+    },
+    {
+      "type": 0,
+      "value": "."
     }
   ],
   "d721757161": [
@@ -923,28 +979,16 @@
       "value": "Try Again"
     }
   ],
-  "d8a50c79a7": [
+  "d88ad2dc74": [
     {
       "type": 0,
-      "value": "Come with me to tldraw"
+      "value": "Accept and continue"
     }
   ],
   "d9100f3e10": [
     {
       "type": 0,
       "value": "Go here to see the content"
-    }
-  ],
-  "da404df474": [
-    {
-      "type": 0,
-      "value": "Save your work"
-    }
-  ],
-  "db4c2dab9a": [
-    {
-      "type": 0,
-      "value": "Not Excalidraw"
     }
   ],
   "dbbebf3c03": [
@@ -975,6 +1019,12 @@
     {
       "type": 0,
       "value": "Pin"
+    }
+  ],
+  "e81c4e4f2b": [
+    {
+      "type": 0,
+      "value": "or"
     }
   ],
   "ea4788705e": [
@@ -1033,6 +1083,12 @@
       "value": " to learn more."
     }
   ],
+  "ef7de3f485": [
+    {
+      "type": 0,
+      "value": "selected"
+    }
+  ],
   "f09b16bc5f": [
     {
       "type": 0,
@@ -1069,6 +1125,12 @@
       "value": "Settings"
     }
   ],
+  "fa2ead697d": [
+    {
+      "type": 0,
+      "value": "Privacy Policy"
+    }
+  ],
   "fb15c53f22": [
     {
       "type": 0,
@@ -1079,12 +1141,6 @@
     {
       "type": 0,
       "value": "Are you sure you want to delete this file?"
-    }
-  ],
-  "fd27891570": [
-    {
-      "type": 0,
-      "value": "Join the waitlist"
     }
   ],
   "fed5ec05eb": [

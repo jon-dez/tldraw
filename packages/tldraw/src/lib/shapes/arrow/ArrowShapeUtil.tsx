@@ -31,6 +31,7 @@ import {
 	clamp,
 	debugFlags,
 	exhaustiveSwitchError,
+	getColorValue,
 	getDefaultColorTheme,
 	getFontsFromRichText,
 	invLerp,
@@ -141,6 +142,9 @@ export class ArrowShapeUtil extends ShapeUtil<TLArrowShape> {
 		return true
 	}
 	override hideSelectionBoundsFg() {
+		return true
+	}
+	override hideInMinimap() {
 		return true
 	}
 
@@ -785,8 +789,8 @@ export class ArrowShapeUtil extends ShapeUtil<TLArrowShape> {
 						lineHeight={TEXT_PROPS.lineHeight}
 						align="middle"
 						verticalAlign="middle"
+						labelColor={getColorValue(theme, shape.props.labelColor, 'solid')}
 						richText={shape.props.richText}
-						labelColor={theme[shape.props.labelColor].solid}
 						textWidth={labelPosition.box.w - ARROW_LABEL_PADDING * 2 * shape.props.scale}
 						isSelected={isSelected}
 						padding={0}
@@ -934,8 +938,8 @@ export class ArrowShapeUtil extends ShapeUtil<TLArrowShape> {
 					font={shape.props.font}
 					align="middle"
 					verticalAlign="middle"
+					labelColor={getColorValue(theme, shape.props.labelColor, 'solid')}
 					richText={shape.props.richText}
-					labelColor={theme[shape.props.labelColor].solid}
 					bounds={getArrowLabelPosition(this.editor, shape)
 						.box.clone()
 						.expandBy(-ARROW_LABEL_PADDING * shape.props.scale)}
@@ -1077,7 +1081,7 @@ const ArrowSvg = track(function ArrowSvg({
 			</defs>
 			<g
 				fill="none"
-				stroke={theme[shape.props.color].solid}
+				stroke={getColorValue(theme, shape.props.color, 'solid')}
 				strokeWidth={strokeWidth}
 				strokeLinejoin="round"
 				strokeLinecap="round"

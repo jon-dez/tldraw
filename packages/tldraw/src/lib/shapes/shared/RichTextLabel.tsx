@@ -8,6 +8,7 @@ import {
 	TLEventInfo,
 	TLRichText,
 	TLShapeId,
+	openWindow,
 	preventDefault,
 	useEditor,
 	useReactor,
@@ -109,10 +110,10 @@ export const RichTextLabel = React.memo(function RichTextLabel({
 			// We don't get the mouseup event later because we preventDefault
 			// so we have to do it manually.
 			const handlePointerUp = (e: TLEventInfo) => {
-				if (e.name !== 'pointer_up') return
+				if (e.name !== 'pointer_up' || !link) return
 
 				if (!isDragging.current) {
-					window.open(link, '_blank', 'noopener, noreferrer')
+					openWindow(link, '_blank', false)
 				}
 				editor.off('event', handlePointerUp)
 			}

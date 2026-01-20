@@ -63,6 +63,11 @@ export interface Environment {
 
 	HEALTH_CHECK_BEARER_TOKEN: string | undefined
 
+	ANALYTICS_API_URL: string | undefined
+	ANALYTICS_API_TOKEN: string | undefined
+
+	PIERRE_KEY: string | undefined
+
 	RATE_LIMITER: RateLimit
 
 	QUEUE: Queue<QueueMessage>
@@ -85,6 +90,7 @@ export type DBLoadResult =
 	| {
 			type: 'room_found'
 			snapshot: RoomSnapshot
+			roomSizeMB: number
 	  }
 	| {
 			type: 'room_not_found'
@@ -119,6 +125,10 @@ export type TLServerEvent =
 			roomId: string
 			messageType: string
 			messageLength: number
+	  }
+	| {
+			type: 'persist_success'
+			attempts: number
 	  }
 
 export type TLPostgresReplicatorRebootSource =

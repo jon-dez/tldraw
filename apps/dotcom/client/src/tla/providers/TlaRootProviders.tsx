@@ -2,7 +2,7 @@ import { useAuth, useUser as useClerkUser } from '@clerk/clerk-react'
 import { getAssetUrlsByImport } from '@tldraw/assets/imports.vite'
 import classNames from 'classnames'
 import { Tooltip as _Tooltip } from 'radix-ui'
-import { ReactNode, useCallback, useEffect, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import {
 	ContainerProvider,
@@ -14,15 +14,20 @@ import {
 	TldrawUiA11yProvider,
 	TldrawUiContextProvider,
 	fetch,
+	runtime,
+	setRuntimeOverrides,
+	useDialogs,
 	useToasts,
 	useValue,
 } from 'tldraw'
 import translationsEnJson from '../../../public/tla/locales-compiled/en.json'
 import { ErrorPage } from '../../components/ErrorPage/ErrorPage'
-import { SignedInAnalytics, SignedOutAnalytics } from '../../utils/analytics'
+import { SignedInAnalytics, SignedOutAnalytics, trackEvent } from '../../utils/analytics'
 import { globalEditor } from '../../utils/globalEditor'
 import { MaybeForceUserRefresh } from '../components/MaybeForceUserRefresh/MaybeForceUserRefresh'
 import { components } from '../components/TlaEditor/TlaEditor'
+import { TlaCookieConsent } from '../components/dialogs/TlaCookieConsent'
+import { TlaLegalAcceptance } from '../components/dialogs/TlaLegalAcceptance'
 import { AppStateProvider, useMaybeApp } from '../hooks/useAppState'
 import { UserProvider } from '../hooks/useUser'
 import '../styles/tla.css'
@@ -35,6 +40,23 @@ import {
 import { FileSidebarFocusContextProvider } from './FileInputFocusProvider'
 
 const assetUrls = getAssetUrlsByImport()
+
+// Override watermark URLs globally for all dotcom editors
+function WatermarkOverride() {
+	useEffect(() => {
+		const originalOpenWindow = runtime.openWindow
+		setRuntimeOverrides({
+			openWindow(url: string, target: string, allowReferrer?: boolean) {
+				if (url.includes('utm_campaign=watermark')) {
+					url = url.replace('utm_source=sdk', 'utm_source=dotcom')
+					trackEvent('click-watermark', { url })
+				}
+				originalOpenWindow(url, target, allowReferrer)
+			},
+		})
+	}, [])
+	return null
+}
 
 export const appMessages = defineMessages({
 	oldBrowser: {
@@ -55,7 +77,10 @@ export function Component() {
 	const [locale, setLocale] = useState<string>('en')
 	const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('light')
 	const handleThemeChange = (theme: 'light' | 'dark' | 'system') => setTheme(theme)
-	const handleLocaleChange = (locale: string) => setLocale(locale)
+	const handleLocaleChange = (locale: string) => {
+		setLocale(locale)
+		document.documentElement.lang = locale
+	}
 	const isFocusMode = useValue(
 		'isFocusMode',
 		() => !!globalEditor.get()?.getInstanceState().isFocusMode,
@@ -77,12 +102,14 @@ export function Component() {
 							<ContainerProvider container={container}>
 								<InsideOfContainerContext>
 									<Outlet />
+									<LegalTermsAcceptance />
 								</InsideOfContainerContext>
 							</ContainerProvider>
 						)}
 					</SignedInProvider>
 				</MaybeForceUserRefresh>
 			</IntlWrapper>
+			<WatermarkOverride />
 		</div>
 	)
 }
@@ -99,7 +126,10 @@ function IntlWrapper({ children, locale }: { children: ReactNode; locale: string
 
 			const res = await fetch(`/tla/locales-compiled/${locale}.json`)
 			const messages = await res.json()
-			setMessages(messages)
+			setMessages({
+				...translationsEnJson,
+				...messages,
+			})
 		}
 		fetchMessages()
 	}, [locale])
@@ -134,6 +164,7 @@ function InsideOfContainerContext({ children }: { children: ReactNode }) {
 					<DefaultToasts />
 					<DefaultA11yAnnouncer />
 					<PutToastsInApp />
+					{currentEditor && <TlaCookieConsent />}
 				</TldrawUiContextProvider>
 			</TldrawUiA11yProvider>
 		</EditorContext.Provider>
@@ -220,6 +251,40 @@ function SignedInProvider({
 			</AppStateProvider>
 		</FileSidebarFocusContextProvider>
 	)
+}
+
+function LegalTermsAcceptance() {
+	const { user } = useClerkUser()
+	const { addDialog } = useDialogs()
+	const userRef = useRef(user)
+
+	// Keep the ref updated with the latest user
+	useEffect(() => {
+		userRef.current = user
+	}, [user])
+
+	useEffect(() => {
+		function maybeShowDialog() {
+			const currentUser = userRef.current
+			if (
+				currentUser &&
+				!currentUser.legalAcceptedAt && // Clerk's canonical metadata key (older accounts)
+				!currentUser.unsafeMetadata?.legal_accepted_at // our metadata key (newer accounts)
+			) {
+				addDialog({
+					component: TlaLegalAcceptance,
+					onClose: () => {
+						// If the user closes the dialog and it's not accepted, show it again
+						maybeShowDialog()
+					},
+				})
+			}
+		}
+
+		maybeShowDialog()
+	}, [addDialog, user?.id])
+
+	return null
 }
 
 function ThemeContainer({
