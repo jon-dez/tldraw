@@ -1,4 +1,4 @@
-import { useEditor } from '@tldraw/editor'
+import { openWindow, useEditor } from '@tldraw/editor'
 import classNames from 'classnames'
 import { PointerEventHandler, useCallback } from 'react'
 import { useEfficientZoomThreshold } from './useEfficientZoomThreshold'
@@ -15,6 +15,15 @@ export function HyperlinkButton({ url }: { url: string }) {
 		},
 		[editor]
 	)
+	const handlePointerUp = useCallback<PointerEventHandler>(
+		(e) => {
+			markAsHandledOnShiftKey(e)
+			if (editor.inputs.getShiftKey()) return
+			e.preventDefault()
+			openWindow(url, '_blank')
+		},
+		[editor, markAsHandledOnShiftKey, url]
+	)
 	return (
 		<a
 			className={classNames('tl-hyperlink-button', {
@@ -24,7 +33,7 @@ export function HyperlinkButton({ url }: { url: string }) {
 			target="_blank"
 			rel="noopener noreferrer"
 			onPointerDown={markAsHandledOnShiftKey}
-			onPointerUp={markAsHandledOnShiftKey}
+			onPointerUp={handlePointerUp}
 			title={url}
 			draggable={false}
 		>

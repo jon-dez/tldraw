@@ -1878,16 +1878,17 @@ function parseUrl(str: string) {
 	}
 }
 
-const validLinkProtocols = new Set(['http:', 'https:', 'mailto:'])
+const validLinkProtocols = new Set(['http:', 'https:', 'mailto:', 'obsidian:'])
 
 /**
- * Validator for URLs that are safe to use as user-facing links. Accepts http, https, and mailto protocols.
+ * Validator for URLs that are safe to use as user-facing links. Accepts http, https, mailto, and obsidian protocols.
  * This validator provides security by rejecting potentially dangerous protocols like javascript:.
  *
  * @example
  * ```ts
  * const link = T.linkUrl.validate("https://example.com") // Valid
  * const email = T.linkUrl.validate("mailto:user@example.com") // Valid
+ * const obsidianLink = T.linkUrl.validate("obsidian://open?vault=my%20vault&file=Note.md") // Valid
  * T.linkUrl.validate("") // Valid (empty string allowed)
  * T.linkUrl.validate("javascript:alert(1)") // Throws ValidationError (unsafe protocol)
  * ```
