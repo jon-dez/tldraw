@@ -17,6 +17,10 @@ import { TldrawUiInput } from './primitives/TldrawUiInput'
 // A url can either be invalid, or valid with a protocol, or valid without a protocol.
 // For example, "aol.com" would be valid with a protocol ()
 function validateUrl(url: string) {
+	const withoutHttpsPrefix = url.replace(/^https?:\/\/(?=obsidian:\/\/)/i, '')
+	if (/^obsidian:\/\//i.test(withoutHttpsPrefix)) {
+		return { isValid: true, hasProtocol: true }
+	}
 	if (T.linkUrl.isValid(url)) {
 		return { isValid: true, hasProtocol: true }
 	}
@@ -79,7 +83,9 @@ export const EditLinkDialogInner = track(function EditLinkDialogInner({
 
 	const handleChange = useCallback((rawValue: string) => {
 		// Just auto-correct double https:// from a bad paste.
-		const fixedRawValue = rawValue.replace(/https?:\/\/(https?:\/\/)/, '$1')
+		const fixedRawValue = rawValue
+			.replace(/https?:\/\/(https?:\/\/)/, '$1')
+			.replace(/^https?:\/\/(?=obsidian:\/\/)/i, '')
 		setUrlInputState(getUrlInputState(fixedRawValue))
 	}, [])
 
