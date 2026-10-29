@@ -1,4 +1,3 @@
-import { tltime } from '@tldraw/editor'
 import { Slider as _Slider } from 'radix-ui'
 import React, { useCallback, useEffect, useState } from 'react'
 import { TLUiTranslationKey } from '../../hooks/useTranslation/TLUiTranslationKey'
@@ -73,8 +72,7 @@ export const TldrawUiSlider = React.forwardRef<HTMLDivElement, TLUiSliderProps>(
 	// which in turn makes the tooltip display prematurely.
 	// This makes it wait until we've focused to show the tooltip.
 	useEffect(() => {
-		const timeout = tltime.setTimeout(
-			'set title and label',
+		const timeout = setTimeout(
 			() => setTitleAndLabel(title + ' — ' + msg(label as TLUiTranslationKey)),
 			0
 		)
